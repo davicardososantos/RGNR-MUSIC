@@ -86,6 +86,46 @@ Explicitamente **fora de escopo** nesta primeira entrega — cada item aqui é u
 | D9 | **Hospedagem e domínio** | **Vercel.** `rgnr-music.vercel.app` agora → `rgnr-music.codetrix.com.br` depois (CNAME) | Host e domínio são decisões separadas. O domínio próprio já existe e entra quando quiser, sem mexer no código |
 | D10 | **Perguntar ≠ escalar** | O formulário vai para todos; **o critério entra na hora de montar a escala**, não na hora de perguntar | Perguntar não custa nada e não deixa ninguém de fora do convite. Quem não vai ser escalado agora (Matheus Ventura 🎓, Sebastião 👔, os 🧪 em formação) aparece na tela de gestão **marcado**, não ausente |
 | D11 | **Prazo é social, não técnico** | O texto anuncia **quarta, 09/09**. O formulário **continua aceitando** resposta depois | Vai ter gente respondendo atrasado — é fato conhecido. Fechar o formulário no prazo puniria justamente quem você mais quer alcançar. Quem fecha é o gestor, quando quiser |
+| D12 | **O app informa, não restringe** | Nenhuma trava. Todo músico pode marcar todas as datas; toda pessoa pode ser escalada em qualquer função; publicar nunca exige justificativa | Ver §5.1 |
+
+---
+
+## 5.1 O princípio que rege o produto (D12)
+
+> **A resposta do músico vale mais que o documento. O app informa; quem decide é a liderança.**
+
+Este PRD passou por uma correção de rota importante na v0.5, e ela vale mais que qualquer funcionalidade descrita adiante.
+
+O `elenco.md` e o `por-instrumento.md` são um **retrato de 30/08**. Eles dizem que o Josiel não tem disponibilidade para cultos — mas se o Josiel marcar "posso" no dia 19, é porque algo mudou: tirou folga, entrou de férias, trocou de escala no trabalho. **O documento envelheceu; a resposta é de hoje.**
+
+Isso inverte a hierarquia dos dados na tela de escala:
+
+| Sinal | Peso |
+|---|---|
+| **O que o músico respondeu** | Primário — define os grupos ✅ / 🤝 / ❌ |
+| Nível, presença, ordem de escala, status | Secundário — desempate e contexto visual |
+
+### O que isso proíbe no produto
+
+- ❌ Esconder alguém de uma função porque "não é o instrumento dele"
+- ❌ Bloquear a publicação de uma escala que contrarie uma regra
+- ❌ Exigir justificativa para escalar quem o sistema não recomendaria
+- ❌ Limitar quais datas cada músico pode marcar
+
+### O que continua valendo
+
+- ✅ Mostrar nível, presença e status **ao lado de cada nome** — informação não é trava
+- ✅ O painel de checagem do `_modelo-escala.md` como **checklist visível**, nunca como portão
+- ✅ Ordenar por quem faz mais sentido primeiro — poupa rolagem, não impede nada
+- ✅ Pr. Anderson fora da lista: essa não é uma regra do app, é uma **decisão da liderança do RGNR** (⛔)
+
+### Por que isso importa na prática
+
+Três coisas que o Davi apontou e que a versão anterior deste PRD teria atrapalhado:
+
+1. **Marcar disponibilidade não é ser escalado.** Todo mundo pode dizer que pode em todas as datas. A escala é outra decisão, feita depois, por gente.
+2. **Existe o Kids, sábado 19h**, em paralelo ao culto — é onde os mais iniciantes tocam. Alguém que se ofereceu para o sábado pode acabar no Kids em vez do culto. Um app que "protege" a escala escondendo iniciante atrapalharia essa realocação.
+3. **Restrição demais complica.** Duas pessoas tocam essa escala no WhatsApp hoje. A ferramenta tem que acelerar o que elas já fazem, não criar um processo de aprovação.
 
 ---
 

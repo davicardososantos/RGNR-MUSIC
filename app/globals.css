@@ -7,6 +7,11 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  /* Cores da marca, utilizáveis como bg-lima, text-roxo, border-lima… */
+  --color-lima: var(--lima);
+  --color-lima-clara: var(--lima-clara);
+  --color-roxo: var(--roxo);
+  --color-roxo-claro: var(--roxo-claro);
   /* A Geist é carregada em app/layout.tsx como --font-geist-sans.
      A pilha de fallback importa: o músico abre isto no celular, às vezes
      em rede ruim. Se a fonte do Google não vier, cai numa sans do sistema
@@ -55,72 +60,66 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  color-scheme: dark;
+  /* ---------------------------------------------------------------
+     Identidade RGNR. Cores extraídas dos materiais oficiais
+     (Documents/RGNR/DISC/rgnr.html e apresentacao-rgnr.html):
+     lima #CEF955 e roxo #8C69CC sobre fundo quase preto.
+     O logo do RGNR MUSIC segue a mesma linha — marca branca sobre
+     gradiente roxo/azul escuro.
+     --------------------------------------------------------------- */
+  --lima: #cef955;
+  --lima-clara: #e3ff8f;
+  --roxo: #8c69cc;
+  --roxo-claro: #ae8ceb;
+
+  --background: #0a0a0e;
+  --foreground: #e7e7ee;
+
+  --card: #101015;
+  --card-foreground: #e7e7ee;
+  --popover: #14141b;
+  --popover-foreground: #e7e7ee;
+
+  /* Lima é clara demais para texto branco: o contraste vem do escuro. */
+  --primary: #cef955;
+  --primary-foreground: #10130a;
+
+  --secondary: #1b1b22;
+  --secondary-foreground: #e7e7ee;
+  --muted: #1b1b22;
+  --muted-foreground: #9a9aa8;
+  --accent: #1e1e26;
+  --accent-foreground: #e7e7ee;
+
+  --destructive: #e5484d;
+  --border: #26262f;
+  --input: #26262f;
+  --ring: #8c69cc;
+
+  --chart-1: #cef955;
+  --chart-2: #8c69cc;
+  --chart-3: #ae8ceb;
+  --chart-4: #e3ff8f;
+  --chart-5: #9a9aa8;
+
+  /* Ecoa o retângulo arredondado do logo */
+  --radius: 0.75rem;
+
+  --sidebar: #0e0e12;
+  --sidebar-foreground: #e7e7ee;
+  --sidebar-primary: #cef955;
+  --sidebar-primary-foreground: #10130a;
+  --sidebar-accent: #1e1e26;
+  --sidebar-accent-foreground: #e7e7ee;
+  --sidebar-border: #26262f;
+  --sidebar-ring: #8c69cc;
 }
 
+/* O app é escuro por identidade, não por preferência do sistema.
+   .dark repete :root para os componentes do shadcn que dependem da classe. */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  color-scheme: dark;
 }
 
 @layer base {
