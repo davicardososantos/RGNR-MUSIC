@@ -10,7 +10,7 @@
 
 -- ------------------------------------------------------------
 -- 1. Os 37 do elenco
---    no_formulario = false apenas no Pr. Anderson (⛔) → 36 recebem o link
+--    todos os 37 recebem o link (D6/D10)
 -- ------------------------------------------------------------
 
 insert into musicos (nome, slug, status, presenca, frentes, eh_lider, nota) values
@@ -52,8 +52,11 @@ insert into musicos (nome, slug, status, presenca, frentes, eh_lider, nota) valu
   ('Talita',            'talita',            'em_formacao',    'media',        '{kids}',          false, 'Nova. Candidata a estrear nos Fire em breve'),
   ('Vinícius',          'vinicius',          'presenca_baixa', 'so_na_escala', '{culto}',         false, 'Quase top, faltam alguns detalhes. Presença bem baixa');
 
--- ⛔ Único fora do formulário
-update musicos set no_formulario = false where slug = 'pr-anderson';
+-- Todos os 37 recebem o formulário (D6, revista em 08/09).
+-- O Pr. Anderson entrou de volta: a restrição dele é para ESCALA, não para
+-- ser perguntado. Perguntar não escala ninguém (D10), e ficar de fora da
+-- lista é o tipo de coisa que a pessoa percebe.
+-- O status 'restricao' continua, e a tela de escala avisa se ele for escalado.
 
 -- ------------------------------------------------------------
 -- 2. Nível e ordem de escala, POR INSTRUMENTO

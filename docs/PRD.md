@@ -1,6 +1,6 @@
 # PRD — Escala MUSIC (Banda RGNR)
 
-**Versão:** 0.5 (MVP entregue — Fases 0 a 4)
+**Versão:** 0.6 (MVP entregue — Fases 0 a 4)
 **Data:** 08/09/2026
 **Autores:** Davi Cardoso · Claude
 **Aprovadores:** Davi e André Santos (liderança da Banda)
@@ -61,7 +61,7 @@ Explicitamente **fora de escopo** nesta primeira entrega — cada item aqui é u
 
 | Papel | Quem | Quantos | Onde usa | O que faz |
 |---|---|---|---|---|
-| **Músico** | Elenco da Banda | **36** | Celular, pelo link do WhatsApp | Informa disponibilidade nas 6 datas |
+| **Músico** | Elenco da Banda | **37** | Celular, pelo link do WhatsApp | Informa disponibilidade nas 6 datas |
 | **Gestor** | Davi e André Santos | 2 | Celular e desktop | Monta, publica e ajusta a escala |
 
 ### Contexto de uso — importa para o design
@@ -80,7 +80,7 @@ Explicitamente **fora de escopo** nesta primeira entrega — cada item aqui é u
 | D3 | **Campos extras** | Instrumento principal + cobertura · Observação por data · Disponibilidade para passagem de som · WhatsApp | Ver §6.1 |
 | D4 | **Acesso do gestor** | Login por e-mail (magic link), allowlist: Davi e André Santos | Sem senha circulando no WhatsApp; dá pra saber quem alterou o quê |
 | D5 | **Público do formulário** | Só a **Banda**. Não vai para Vocal nem Classic | Escopo do MVP |
-| D6 | **Quem recebe o formulário** | **O elenco inteiro — 36 dos 37.** Fora só o Pr. Anderson (⛔) | Ver D10 |
+| D6 | **Quem recebe o formulário** | **O elenco inteiro — os 37.** Ninguém fica de fora *(revisto em 08/09: o Pr. Anderson voltou)* | Ver D10 |
 | D7 | **Privacidade** | Músico **nunca** vê a disponibilidade de outro — nem durante, nem depois | Ver §5 |
 | D8 | **Fonte da verdade** | O sistema **substitui** o `escalas/2026/2026-09.md` do Obsidian | Um lugar só. Sem escala em dois lugares |
 | D9 | **Hospedagem e domínio** | **Vercel.** `rgnr-music.vercel.app` agora → `rgnr-music.codetrix.com.br` depois (CNAME) | Host e domínio são decisões separadas. O domínio próprio já existe e entra quando quiser, sem mexer no código |
@@ -117,7 +117,7 @@ Isso inverte a hierarquia dos dados na tela de escala:
 - ✅ Mostrar nível, presença e status **ao lado de cada nome** — informação não é trava
 - ✅ O painel de checagem do `_modelo-escala.md` como **checklist visível**, nunca como portão
 - ✅ Ordenar por quem faz mais sentido primeiro — poupa rolagem, não impede nada
-- ✅ Pr. Anderson fora da lista: essa não é uma regra do app, é uma **decisão da liderança do RGNR** (⛔)
+- ✅ Mostrar o ⛔ do Pr. Anderson na tela de escala: a restrição é **decisão da liderança do RGNR**, e o app a exibe sem impedir nada
 
 ### Por que isso importa na prática
 
@@ -166,11 +166,11 @@ Isso preserva o atrito zero e fecha o vazamento. Se algum dia virar problema de 
 **Passo 1 — Quem é você?**
 Lista dos músicos com busca. Nomes vêm do `elenco.md`. Ao selecionar, o app grava a chave de edição no navegador (§5).
 
-**Quem aparece na lista:** os 36. Entram inclusive **Sebastião** (👔, maestro do Classic), **Matheus Ventura** (🎓, sem audição fechada) e todo mundo que serve em duas frentes — Raquel Malta, Nayanne, Arely, Diego, Gustavo.
-
-*Fora da lista:* apenas **Pr. Anderson** (⛔ restrição vigente).
+**Quem aparece na lista: os 37. Ninguém fica de fora.** Entram inclusive **Sebastião** (👔, maestro do Classic), **Matheus Ventura** (🎓, sem audição fechada), o **Pr. Anderson** (⛔ restrição vigente) e todo mundo que serve em duas frentes.
 
 > **Por que perguntar até para quem não vai ser escalado (D10):** o custo de perguntar é zero e o de não perguntar é alguém se sentir fora do grupo. O filtro acontece na §6.2, não aqui.
+>
+> O caso do Pr. Anderson é o mais claro: a restrição dele é **para escala**, decidida pela liderança do RGNR. Não ser perguntado sobre disponibilidade seria uma segunda punição que ninguém decidiu. O status ⛔ continua, e a tela de escala avisa se ele for escalado.
 
 **Passo 2 — Seus dados** *(pré-preenchidos, ele só confirma)*
 - **WhatsApp** — para o gestor acionar plano B direto da tela
@@ -246,7 +246,7 @@ Cada cartão mostra: quantos responderam / total, funções preenchidas, e o ale
 
 #### B. Status de respostas — `/admin/respostas`
 
-Com 36 pessoas, **cobrar é metade do trabalho**. Esta tela existe para isso:
+Com 37 pessoas, **cobrar é metade do trabalho**. Esta tela existe para isso:
 
 - Lista de quem respondeu e quem falta, ordenada por status (✅ ativo primeiro — são os que importam)
 - Botão **"copiar cobrança"** que gera a mensagem pronta com o link, para colar no WhatsApp
@@ -526,6 +526,7 @@ Em ordem de valor:
 *Resolvido na v0.3:* lista de nomes fechada em 36 (D6/D10) — Sebastião e Matheus Ventura entram.
 *Resolvido na v0.4:* prazo de resposta = quarta 09/09, sem fechar o formulário (D11).
 *Resolvido na v0.5:* e-mail do André cadastrado, login testado e funcionando.
+*Revisto na v0.6:* o Pr. Anderson voltou para a lista do formulário. A restrição dele é para escala, não para ser perguntado.
 
 ---
 

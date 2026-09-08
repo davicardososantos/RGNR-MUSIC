@@ -1,7 +1,7 @@
 # Escala MUSIC — Banda RGNR
 
 Ferramenta de disponibilidade e escala da Banda do MUSIC (ministério de música do RGNR / IPDA).
-Dois gestores (Davi e André Santos) montam a escala; ~36 músicos informam disponibilidade.
+Dois gestores (Davi e André Santos) montam a escala; 37 músicos informam disponibilidade.
 
 **Leia antes de mexer:** [docs/PRD.md](docs/PRD.md) e [docs/PLANO-TECNICO.md](docs/PLANO-TECNICO.md).
 
@@ -41,8 +41,10 @@ Estas regras vêm do PRD e não devem ser quebradas sem mudar o PRD antes.
    Ninguém é escondido de uma função por não tocar o instrumento — aparece
    atrás de um clique, marcado. A resposta do músico vale mais que o
    documento, porque o documento é um retrato de 30/08 e a resposta é de hoje.
-7. **Culto e Fire têm formações diferentes** (9 funções × 4). No Fire, status
-   "em formação" é destaque positivo, não aviso — é o laboratório de estreia.
+7. **Culto e Fire usam as mesmas 9 posições.** O que muda é quais contam como
+   obrigatórias no checklist: o culto exige 6, o Fire só baixo, bateria e
+   teclado. No Fire, status "em formação" é destaque positivo, não aviso — é
+   o laboratório de estreia.
 8. **Nada de emoji na interface.** Todo ícone vem do Font Awesome, através de
    `components/icone.tsx`. Ver abaixo.
 
@@ -74,7 +76,7 @@ cairiam todos no mesmo desenho de violão do Font Awesome, e o nome já resolve.
 
 ## Escrita
 
-O texto da interface é lido por 36 pessoas da igreja, no celular. Português
+O texto da interface é lido por 37 pessoas da igreja, no celular. Português
 direto, sem jargão de produto. **Não usar travessão (—) em texto de interface:**
 é cacoete de IA. Duas frases curtas, ou uma vírgula.
 
