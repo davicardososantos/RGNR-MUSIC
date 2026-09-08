@@ -44,7 +44,7 @@ export default async function EventoPage({
           {evento.titulo ?? (fire ? 'Fire' : 'Culto')} · {hora(evento.hora_evento)}
           {evento.hora_passagem && ` · passagem ${hora(evento.hora_passagem)}`}
           {' · '}
-          formação {fire ? 'enxuta' : 'completa'} ({funcoes.length} funções)
+          {funcoes.length} posições
         </p>
       </div>
 
@@ -65,8 +65,9 @@ export default async function EventoPage({
 
       {fire && (
         <p className="border-lima/30 bg-lima/5 rounded-lg border px-3 py-2.5 text-sm">
-          O Fire é o laboratório de estreia. Quem está em formação aparece
-          destacado aqui, não com aviso.
+          O Fire é o laboratório de estreia: quem está em formação aparece
+          destacado aqui, não com aviso. Só baixo, bateria e teclado contam
+          como obrigatórios, mas dá para montar banda completa.
         </p>
       )}
 

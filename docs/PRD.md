@@ -261,7 +261,7 @@ Com 36 pessoas, **cobrar é metade do trabalho**. Esta tela existe para isso:
 
 Isto vem direto do `regras-de-escala.md` §1 e é a mudança mais importante desta versão do PRD: **sexta e sábado não são a mesma coisa.**
 
-**⛪ Culto (sábados) — 9 funções**
+**⛪ Culto (sábados)**
 
 | Função | Obrigatória | Plano B obrigatório |
 |---|---|---|
@@ -269,20 +269,27 @@ Isto vem direto do `regras-de-escala.md` §1 e é a mudança mais importante des
 | 🎹 Teclado auxiliar | Desejável | |
 | 🎸 Guitarra 1 | Sim | |
 | 🎸 Guitarra 2 | Não | |
-| 🎸 Violão | Sim | |
+| 🎸 Violão | Não *(deixou de ser em 08/09)* | |
 | 🎸 **Baixo** | Sim | **Sim — sempre** |
 | 🥁 Bateria | Sim | |
 | 🔈 Click e VS | Sim | *(sai junto com a bateria por padrão)* |
 | 🎤 Comunicação | Sim | |
 
-**🔥 Fire (sextas) — 4 funções, formação enxuta**
+**🔥 Fire (sextas) — as mesmas 9 posições**
 
-| Função | Obrigatória |
+Revisto em 08/09. O Fire estava travado nas 4 posições mínimas do
+`regras-de-escala.md`, mas na prática às vezes monta banda completa: dois
+teclados, duas guitarras, violão, baixo e bateria. **Mínimo não é limite.**
+
+O que muda entre os dois tipos é só o que conta como obrigatório:
+
+| Tipo | Obrigatórias |
 |---|---|
-| 🎹 Teclado | Sim |
-| 🎸 Violão **ou** Guitarra | Sim (uma das duas) |
-| 🎸 Baixo | Sim |
-| 🥁 Bateria **ou** Cajon | Sim |
+| **Culto** | baixo, bateria, teclado base, guitarra 1, click/VS, comunicação |
+| **Fire** | baixo, bateria, teclado base |
+
+A posição de bateria aceita **cajon** — sem isso o João Ygor e a Arely
+ficariam órfãos quando a posição de ritmo do Fire deixou de existir.
 
 ##### O Fire inverte a regra do "em formação"
 
@@ -371,7 +378,7 @@ O app **não inventa regra**. Ele executa o que já está em `regras-de-escala.m
 | "Só na escala" e 🕐 pedem confirmação dupla | Selo na tela de respostas |
 | Click e VS sai com a bateria | Preenchido automaticamente ao escalar o baterista, editável |
 | Pelo menos um líder fora do palco | Item do painel de checagem |
-| Fire é o laboratório de estreia | Formação enxuta + destaque para 🧪 |
+| Fire é o laboratório de estreia | Menos posições obrigatórias + destaque para quem está em formação |
 
 ---
 

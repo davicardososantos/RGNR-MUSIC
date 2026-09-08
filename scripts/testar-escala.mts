@@ -153,7 +153,7 @@ andreNoBaixo
 console.log('\n3. O Fire inverte a regra de quem está em formação')
 // ------------------------------------------------------------
 const fire = funcoesDe('fire')
-const fRitmo = fire.find((f) => f.id === 'ritmo_fire')!
+const fRitmo = fire.find((f) => f.id === 'bateria')!
 responde('João S', 'sim')
 
 const noFire = candidatosParaFuncao(fRitmo, { tipo: 'fire' }, musicos, [])
@@ -220,11 +220,26 @@ checarEscala({ evento: { tipo: 'culto' }, funcoes: culto, musicos, escalacoes: b
 // ------------------------------------------------------------
 console.log('\n5. Formações diferentes por tipo de evento')
 // ------------------------------------------------------------
-culto.length === 9 ? ok('culto tem 9 funções') : nok(`culto tem ${culto.length}`)
-fire.length === 4 ? ok('fire tem 4 funções') : nok(`fire tem ${fire.length}`)
-fire.find((f) => f.id === 'harmonia_fire')?.instrumentos.sort().join(',') === 'guitarra,violao'
-  ? ok('a harmonia do Fire aceita violão OU guitarra')
-  : nok('harmonia_fire com instrumentos errados')
+culto.length === 9 ? ok('culto tem 9 posições') : nok(`culto tem ${culto.length}`)
+fire.length === 9 ? ok('fire tem as mesmas 9 posições') : nok(`fire tem ${fire.length}`)
+
+const obrigCulto = culto.filter((f) => f.obrigatoria).map((f) => f.id).sort()
+const obrigFire = fire.filter((f) => f.obrigatoria).map((f) => f.id).sort()
+obrigFire.join(',') === 'baixo,bateria,teclado_base'
+  ? ok('no Fire só baixo, bateria e teclado são obrigatórios')
+  : nok('obrigatórias do Fire: ' + obrigFire.join(', '))
+!obrigCulto.includes('violao')
+  ? ok('no culto o violão deixou de ser obrigatório')
+  : nok('violão ainda está obrigatório no culto')
+
+culto.find((f) => f.id === 'bateria')?.instrumentos.sort().join(',') === 'bateria,cajon'
+  ? ok('a bateria aceita cajon, então João Ygor e Arely continuam candidatos')
+  : nok('bateria não aceita cajon')
+
+const semCorda = checarEscala({ evento: { tipo: 'culto' }, funcoes: culto, musicos, escalacoes: comAncora })
+semCorda.find((c) => c.id === 'harmonia-corda')?.estado === 'atencao'
+  ? ok('escala sem guitarra nem violão é apontada')
+  : nok('deveria apontar a falta de corda')
 
 console.log(falhas === 0 ? '\n✅ Lógica da escala conferida.\n' : `\n❌ ${falhas} falha(s).\n`)
 process.exit(falhas === 0 ? 0 : 1)

@@ -74,7 +74,7 @@ export function checarEscala(ctx: Contexto): Checagem[] {
   })
 
   // 2. Âncora na base rítmica (regras §2.1)
-  const base = emFuncoes(fire ? ['baixo', 'ritmo_fire'] : ['baixo', 'bateria'])
+  const base = emFuncoes(['baixo', 'bateria'])
   const ancoraBase = base.some((e) => e.nivel && ANCORA.includes(e.nivel))
   checagens.push({
     id: 'ancora-ritmica',
@@ -89,11 +89,13 @@ export function checarEscala(ctx: Contexto): Checagem[] {
   })
 
   // 3. Âncora nas harmonias
-  const harmonias = emFuncoes(
-    fire
-      ? ['teclado_fire', 'harmonia_fire']
-      : ['teclado_base', 'guitarra_1', 'guitarra_2', 'violao'],
-  )
+  const harmonias = emFuncoes([
+    'teclado_base',
+    'teclado_aux',
+    'guitarra_1',
+    'guitarra_2',
+    'violao',
+  ])
   const ancoraHarmonia = harmonias.some((e) => e.nivel && ANCORA.includes(e.nivel))
   checagens.push({
     id: 'ancora-harmonia',
@@ -107,7 +109,19 @@ export function checarEscala(ctx: Contexto): Checagem[] {
       : 'Ninguém Top ou Avançado em teclado/guitarra/violão',
   })
 
-  // 4. Iniciante sem cobertura (regras §2.2)
+  // 4. Alguma harmonia de corda
+  const cordas = emFuncoes(['guitarra_1', 'guitarra_2', 'violao'])
+  checagens.push({
+    id: 'harmonia-corda',
+    titulo: 'Guitarra ou violão na escala',
+    estado: cordas.length > 0 ? 'ok' : 'atencao',
+    detalhe:
+      cordas.length > 0
+        ? cordas.map((e) => `${e.musico.nome} (${e.funcao.nome.toLowerCase()})`).join(', ')
+        : 'Nenhuma das duas. O violão deixou de ser obrigatório, mas a escala ficaria só com teclado nas harmonias',
+  })
+
+  // 5. Iniciante sem cobertura (regras §2.2)
   const iniciantes = escalados.filter((e) => e.nivel === 'iniciante')
   const temCobertura = escalados.some((e) => e.nivel && ANCORA.includes(e.nivel))
   checagens.push({
@@ -123,7 +137,7 @@ export function checarEscala(ctx: Contexto): Checagem[] {
           : `${iniciantes.map((e) => e.musico.nome).join(', ')} sem ninguém acima do nível`,
   })
 
-  // 5. Plano B do baixo (regras §4.2) — só culto
+  // 6. Plano B do baixo (regras §4.2) — só culto
   if (!fire) {
     const planoB = ctx.escalacoes.some(
       (e) => e.funcao_id === 'baixo' && e.tipo === 'plano_b',
@@ -138,7 +152,7 @@ export function checarEscala(ctx: Contexto): Checagem[] {
     })
   }
 
-  // 6. Acúmulo de função (regras §4.3)
+  // 7. Acúmulo de função (regras §4.3)
   const contagem = new Map<string, string[]>()
   for (const e of escalados) {
     contagem.set(e.musico.id, [...(contagem.get(e.musico.id) ?? []), e.funcao.id])
@@ -158,7 +172,7 @@ export function checarEscala(ctx: Contexto): Checagem[] {
             .join(', '),
   })
 
-  // 7. Um líder fora do palco (regras §4.4)
+  // 8. Um líder fora do palco (regras §4.4)
   const lideresEscalados = escalados.filter((e) => e.musico.ehLider)
   const lideres = ctx.musicos.filter((m) => m.ehLider)
   checagens.push({
@@ -171,7 +185,7 @@ export function checarEscala(ctx: Contexto): Checagem[] {
         : 'Davi e André os dois no palco',
   })
 
-  // 8. Passagem de som (regras §3.5)
+  // 9. Passagem de som (regras §3.5)
   const semSom = escalados.filter(
     (e) => e.musico.resposta !== null && !e.musico.passagemSom,
   )
@@ -185,7 +199,7 @@ export function checarEscala(ctx: Contexto): Checagem[] {
         : `${semSom.map((e) => e.musico.nome).join(', ')} não confirmou a passagem`,
   })
 
-  // 9. Restrição vigente (regras §2.6)
+  // 10. Restrição vigente (regras §2.6)
   const comRestricao = escalados.filter((e) => e.musico.status === 'restricao')
   if (comRestricao.length > 0) {
     checagens.push({

@@ -1,8 +1,8 @@
 # Plano técnico — Escala MUSIC
 
-**Versão:** 1.0
+**Versão:** 1.1 (MVP entregue)
 **Data:** 08/09/2026
-**Base:** [PRD.md](PRD.md) v0.4
+**Base:** [PRD.md](PRD.md) v0.5
 **Repositório:** `c:\Programação\RGNR-MUSIC`
 
 ---
@@ -46,7 +46,6 @@ rgnr-music/
 │  │  └ evento/[data]/
 │  │     ├ page.tsx                    → montar a escala
 │  │     └ cobertura/page.tsx          → plano B ao vivo
-│  ├ escala/[data]/page.tsx            → escala publicada (read-only, fase 5)
 │  ├ login/page.tsx
 │  └ auth/callback/route.ts            → troca do magic link por sessão
 │
@@ -60,14 +59,15 @@ rgnr-music/
 │  │  └ sessao.ts                      → sessão do gestor + allowlist
 │  ├ regras.ts                         ← motor de validação da escala
 │  ├ candidatos.ts                     ← quem pode ocupar cada função
-│  ├ formacoes.ts                      → culto (9 funções) × fire (4)
+│  ├ dados-escala.ts                   → carrega tudo da tela de escala
 │  ├ chave-edicao.ts                   → §5 do PRD
 │  ├ whatsapp.ts                       → monta as mensagens prontas
 │  └ tipos.ts                          → gerado do schema
 │
 ├ components/
 │  ├ formulario/  CartaoData · SeletorNome · PassoDados
-│  ├ escala/      LinhaFuncao · SeletorMusico · PainelChecagem · CardCandidato
+│  ├ escala/      Montador · SeletorMusico · PainelChecagem · Cobertura
+│  ├ admin/       FormLogin · LinhaMusico
 │  └ ui/          shadcn
 │
 ├ supabase/
@@ -75,7 +75,10 @@ rgnr-music/
 │  └ seed.sql                          ← 37 do elenco, 36 no formulário
 │
 └ scripts/
-   └ exportar-md.ts                    → backup da escala em Markdown
+   ├ validar-seed.mjs                  → confere o seed antes de subir
+   ├ testar-conexao.mjs                → prova o RLS deny-all
+   ├ conferir-elenco.mjs               → imprime o elenco do banco
+   └ testar-escala.mts                 → exercita candidatos e checklist
 ```
 
 ---
@@ -140,10 +143,11 @@ create table musicos (
 create table musico_instrumento (
   musico_id      uuid  references musicos on delete cascade,
   instrumento_id text  references instrumentos,
-  nivel          nivel_tecnico not null,
+  nivel          nivel_tecnico,          -- anulável: o elenco tem "—" e "A avaliar"
   principal      boolean       not null default false,
   ordem          ordem_escala  not null default 'reserva',
   observacao     text,
+  ativo          boolean       not null default true,  -- false = o músico tirou no formulário
   primary key (musico_id, instrumento_id)
 );
 ```
@@ -152,13 +156,13 @@ create table musico_instrumento (
 
 ```sql
 create table funcoes (
-  id    text primary key,   -- 'teclado_base','baixo','guitarra_1','harmonia_fire',...
+  id    text primary key,   -- 'teclado_base','baixo','guitarra_1','violao',...
   nome  text not null,
   emoji text
 );
 
 -- uma função pode aceitar mais de um instrumento:
--- 'harmonia_fire' → violao + guitarra · 'ritmo_fire' → bateria + cajon
+-- 'bateria' → bateria + cajon
 create table funcao_instrumentos (
   funcao_id      text references funcoes on delete cascade,
   instrumento_id text references instrumentos,
@@ -290,18 +294,24 @@ Isso satisfaz a D7 (privacidade) por construção, não por acerto de política.
 
 ### Formações (seed fixo)
 
+Os dois tipos usam as **mesmas 9 posições**. O que muda é a obrigatoriedade.
+
 ```
-CULTO (9)                          FIRE (4)
-1. baixo          obrig · planoB   1. baixo         obrig
-2. bateria        obrig            2. ritmo_fire    obrig  (bateria | cajon)
-3. teclado_base   obrig            3. teclado       obrig
-4. guitarra_1     obrig            4. harmonia_fire obrig  (violão | guitarra)
-5. violao         obrig
-6. guitarra_2     —
-7. teclado_aux    desejável
-8. click_vs       obrig  (sai com a bateria)
-9. comunicacao    obrig
+posição         ordem   culto        fire
+baixo             1     obrig+planoB obrig
+bateria           2     obrig        obrig     (aceita cajon)
+teclado_base      3     obrig        obrig
+guitarra_1        4     obrig        —
+violao            5     —            —
+guitarra_2        6     —            —
+teclado_aux       7     —            —
+click_vs          8     obrig        —         (sai com a bateria)
+comunicacao       9     obrig        —
 ```
+
+Revisto em 08/09: o Fire tinha 4 posições próprias, o mínimo do
+`regras-de-escala.md`. Mas o Fire às vezes monta banda completa, e o
+violão no culto nem sempre entra. Mínimo virou obrigatoriedade, não limite.
 
 A `ordem` segue a ordem de decisão do `regras-de-escala.md` §5: **baixo primeiro, bateria depois.**
 
@@ -404,8 +414,7 @@ export function checarEscala(ctx: {
 | `/admin` | gestor | Painel do mês, 6 cartões |
 | `/admin/respostas` | gestor | Quem respondeu · cobrança WhatsApp |
 | `/admin/evento/[data]` | gestor | **Montar a escala** |
-| `/admin/evento/[data]/cobertura` | gestor | Plano B ao vivo |
-| `/escala/[data]` | público | Escala publicada, read-only *(fase 5)* |
+| `/admin/evento/[data]/cobertura` | gestor | Quem pode cobrir quando alguém cai |
 
 **Guarda do `/admin`:** `layout.tsx` valida sessão + e-mail na tabela `admins`. E-mail fora da allowlist → 404, não 403 (não confirma que a área existe).
 
