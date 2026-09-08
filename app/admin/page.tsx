@@ -38,7 +38,11 @@ export default async function AdminPage() {
         {eventos.map(({ evento, sim, sePrecisar, nao, responderam }) => {
           const fire = evento.tipo === 'fire'
           return (
-            <div key={evento.id} className="border-border rounded-xl border p-4">
+            <Link
+              key={evento.id}
+              href={`/admin/evento/${evento.data}`}
+              className="border-border hover:bg-accent/40 block rounded-xl border p-4 transition-colors"
+            >
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="flex items-center gap-2 text-base font-medium">
@@ -81,13 +85,13 @@ export default async function AdminPage() {
                   segue aberto até você encerrar.
                 </p>
               )}
-            </div>
+            </Link>
           )
         })}
       </div>
 
       <p className="text-muted-foreground border-border border-t pt-4 text-xs">
-        Montar a escala de cada data entra na próxima etapa.
+        Toque numa data para montar a escala.
       </p>
     </div>
   )

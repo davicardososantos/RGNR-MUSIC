@@ -10,7 +10,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "validar-seed": "node scripts/validar-seed.mjs",
     "testar-conexao": "node --env-file=.env.local scripts/testar-conexao.mjs",
-    "conferir-elenco": "node --env-file=.env.local scripts/conferir-elenco.mjs"
+    "conferir-elenco": "node --env-file=.env.local scripts/conferir-elenco.mjs",
+    "testar-escala": "tsx --env-file=.env.local scripts/testar-escala.mts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
@@ -45,6 +46,7 @@
     "eslint-config-next": "16.3.4",
     "supabase": "^2.117.0",
     "tailwindcss": "^4",
+    "tsx": "^4.23.13",
     "typescript": "^5"
   }
 }
