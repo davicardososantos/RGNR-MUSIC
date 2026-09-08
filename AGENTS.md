@@ -34,7 +34,41 @@ Estas regras vêm do PRD e não devem ser quebradas sem mudar o PRD antes.
 6. **Alerta de regra não bloqueia** — pede justificativa, que fica gravada.
    A liderança pode fechar contra a regra conscientemente.
 7. **Culto e Fire têm formações diferentes** (9 funções × 4). No Fire, status
-   🧪 em formação é destaque positivo, não aviso — é o laboratório de estreia.
+   "em formação" é destaque positivo, não aviso — é o laboratório de estreia.
+8. **Nada de emoji na interface.** Todo ícone vem do Font Awesome, através de
+   `components/icone.tsx`. Ver abaixo.
+
+## Ícones
+
+Emoji na interface está proibido neste projeto. Motivos, na ordem que importa:
+
+1. Dá cara de coisa gerada por IA — foi o motivo do pedido
+2. Renderiza diferente em cada sistema (Android, iOS e Windows desenham outro boneco)
+3. Não herda `currentColor`: não dá para tingir de lima ou roxo
+4. Não alinha com a linha de base do texto nem escala com a tipografia
+
+**Como usar:**
+
+```tsx
+import { Icone } from '@/components/icone'
+
+<Icone nome="sim" className="h-4 w-4" />
+```
+
+**Como adicionar um ícone novo:** importe de `@fortawesome/free-solid-svg-icons`
+em `components/icone.tsx` e registre no objeto `ICONES` com um nome **do
+domínio**, não do desenho — `sePrecisar`, não `faHandshakeAngle`. O resto do
+app nunca importa Font Awesome direto.
+
+**Onde não usar ícone:** quando o rótulo ao lado já diz a mesma coisa. Os
+botões de instrumento são só texto de propósito — baixo, guitarra e violão
+cairiam todos no mesmo desenho de violão do Font Awesome, e o nome já resolve.
+
+## Escrita
+
+O texto da interface é lido por 36 pessoas da igreja, no celular. Português
+direto, sem jargão de produto. **Não usar travessão (—) em texto de interface:**
+é cacoete de IA. Duas frases curtas, ou uma vírgula.
 
 ## Fonte das regras
 

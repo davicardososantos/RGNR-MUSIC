@@ -1,7 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
+import { config } from "@fortawesome/fontawesome-svg-core";
 import { Toaster } from "@/components/ui/sonner";
+import "@fortawesome/fontawesome-svg-core/styles.css";
 import "./globals.css";
+
+// Sem isto o Font Awesome injeta o próprio CSS em tempo de execução e os
+// ícones aparecem gigantes por um instante antes de assentar.
+config.autoAddCss = false;
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

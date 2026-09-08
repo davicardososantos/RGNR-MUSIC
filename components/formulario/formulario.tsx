@@ -6,14 +6,26 @@ import { Button } from '@/components/ui/button'
 import { SeletorNome } from './seletor-nome'
 import { PassoDados, type DadosDoMusico } from './passo-dados'
 import { CartaoData, type RespostaLocal } from './cartao-data'
+import { Icone, type NomeIcone } from '@/components/icone'
 import { abrirFormulario, salvarDados, salvarResposta } from '@/actions/disponibilidade'
 import { dataCurta, diaEMes } from '@/lib/datas'
-import { RESPOSTA_LABEL, type Evento, type Instrumento } from '@/lib/tipos'
+import {
+  RESPOSTA_LABEL,
+  type Evento,
+  type Instrumento,
+  type RespostaDisponibilidade,
+} from '@/lib/tipos'
 import type { MusicoDaLista } from '@/lib/dados'
 
 type Etapa = 'nome' | 'dados' | 'datas' | 'pronto'
 
 const VAZIA: RespostaLocal = { resposta: null, passagemSom: false, observacao: '' }
+
+const ICONE_DA_RESPOSTA: Record<RespostaDisponibilidade, NomeIcone> = {
+  sim: 'sim',
+  se_precisar: 'sePrecisar',
+  nao: 'nao',
+}
 
 export function Formulario({
   musicos,
@@ -93,6 +105,22 @@ export function Formulario({
     )
   }
 
+  /**
+   * Volta para a lista de nomes. Cancela o que estiver pendente em vez de
+   * gravar: quem clica em "não sou eu" está dizendo que a resposta não é
+   * dele, e não faz sentido persistir mais nada naquele nome.
+   */
+  function trocarNome() {
+    timers.current.forEach((t) => clearTimeout(t))
+    timers.current.clear()
+    setEtapa('nome')
+    setSlug(null)
+    setNome('')
+    setRespostas({})
+    setSalvos({})
+    setDados({ whatsapp: '', principal: null, cobertura: [] })
+  }
+
   async function escolherNome(escolhido: string) {
     setAbrindo(escolhido)
     try {
@@ -166,6 +194,7 @@ export function Formulario({
         dados={dados}
         onMudar={setDados}
         onContinuar={continuarDosDados}
+        onTrocarNome={trocarNome}
         salvando={salvandoDados}
       />
     )
@@ -175,12 +204,22 @@ export function Formulario({
     return (
       <div className="space-y-5">
         <div className="space-y-1.5">
-          <h2 className="text-xl font-semibold tracking-tight">
-            Em quais datas você pode?
-          </h2>
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 className="text-xl font-semibold tracking-tight">
+              Em quais datas você pode?
+            </h2>
+            <button
+              type="button"
+              onClick={trocarNome}
+              className="text-muted-foreground hover:text-foreground flex shrink-0 items-center gap-1.5 text-sm underline-offset-4 hover:underline"
+            >
+              <Icone nome="trocar" className="h-3 w-3" />
+              {nome}
+            </button>
+          </div>
           <p className="text-muted-foreground text-sm">
-            Marcar que pode <strong>não</strong> quer dizer que você foi escalado — a
-            liderança fecha a escala depois.
+            Marcar que pode <strong>não</strong> quer dizer que você foi escalado, mas
+            que a liderança irá fechar a escala depois e te notificar.
           </p>
         </div>
 
@@ -222,7 +261,7 @@ export function Formulario({
   return (
     <div className="space-y-5">
       <div className="space-y-1.5 text-center">
-        <p className="text-4xl">🙌</p>
+        <Icone nome="concluido" className="text-lima mx-auto h-10 w-10" />
         <h2 className="text-xl font-semibold tracking-tight">Valeu, {nome}!</h2>
         <p className="text-muted-foreground text-sm">
           Sua resposta chegou. Você pode voltar neste link e mudar quando quiser.
@@ -235,9 +274,14 @@ export function Formulario({
           return (
             <div key={e.id} className="flex items-center justify-between px-4 py-3 text-sm">
               <span className="capitalize">{dataCurta(e.data)}</span>
-              <span className={r ? '' : 'text-muted-foreground'}>
-                {r ? `${RESPOSTA_LABEL[r].emoji} ${RESPOSTA_LABEL[r].curto}` : 'sem resposta'}
-              </span>
+              {r ? (
+                <span className="flex items-center gap-2">
+                  <Icone nome={ICONE_DA_RESPOSTA[r]} className="h-3.5 w-3.5" />
+                  {RESPOSTA_LABEL[r].curto}
+                </span>
+              ) : (
+                <span className="text-muted-foreground">sem resposta</span>
+              )}
             </div>
           )
         })}
@@ -249,12 +293,7 @@ export function Formulario({
         </Button>
         <Button
           variant="ghost"
-          onClick={() => {
-            setEtapa('nome')
-            setSlug(null)
-            setRespostas({})
-            setSalvos({})
-          }}
+          onClick={trocarNome}
           className="text-muted-foreground h-12 text-base"
         >
           Responder por outra pessoa

@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import { Icone } from '@/components/icone'
 import { Formulario } from '@/components/formulario/formulario'
 import { musicosDesteNavegador } from '@/lib/chave-edicao'
 import {
@@ -28,7 +29,7 @@ export default async function SetembroPage() {
     return (
       <main className="flex flex-1 items-center justify-center p-6">
         <div className="max-w-sm space-y-3 text-center">
-          <p className="text-4xl">🔒</p>
+          <Icone nome="encerrado" className="text-muted-foreground mx-auto h-9 w-9" />
           <h1 className="text-xl font-semibold">Respostas encerradas</h1>
           <p className="text-muted-foreground text-sm">
             A escala de setembro já foi fechada. Qualquer coisa, fala com o Davi ou o
@@ -57,9 +58,6 @@ export default async function SetembroPage() {
             Disponibilidade de setembro
           </h1>
           <p className="text-muted-foreground text-sm leading-relaxed">
-            Sextas é <span className="text-lima">Fire</span>, sábados é{' '}
-            <span className="text-roxo-claro">culto</span>.
-            <br />
             Leva menos de dois minutos.
           </p>
         </div>
@@ -74,7 +72,7 @@ export default async function SetembroPage() {
       />
 
       <footer className="text-muted-foreground mt-10 text-center text-xs">
-        Só o Davi e o André veem as respostas.
+        Só a liderança vê as respostas.
       </footer>
     </main>
   )

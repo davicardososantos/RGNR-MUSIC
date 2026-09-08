@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Textarea } from '@/components/ui/textarea'
+import { Icone, type NomeIcone } from '@/components/icone'
 import { dataPorExtenso, hora } from '@/lib/datas'
 import type { Evento, RespostaDisponibilidade } from '@/lib/tipos'
 
@@ -17,22 +18,27 @@ export type RespostaLocal = {
  * lima = posso, roxo = topo cobrir. Cinza = não posso.
  * A leitura é "colorido significa que dá para contar comigo".
  */
-const OPCOES: { valor: RespostaDisponibilidade; emoji: string; texto: string; cor: string }[] = [
+const OPCOES: {
+  valor: RespostaDisponibilidade
+  icone: NomeIcone
+  texto: string
+  cor: string
+}[] = [
   {
     valor: 'sim',
-    emoji: '✅',
+    icone: 'sim',
     texto: 'Sim',
     cor: 'border-lima bg-lima text-primary-foreground',
   },
   {
     valor: 'se_precisar',
-    emoji: '🤝',
+    icone: 'sePrecisar',
     texto: 'Se precisar',
     cor: 'border-roxo bg-roxo text-white',
   },
   {
     valor: 'nao',
-    emoji: '❌',
+    icone: 'nao',
     texto: 'Não',
     cor: 'border-muted-foreground bg-muted text-muted-foreground',
   },
@@ -59,10 +65,11 @@ export function CartaoData({
     <div className="border-border rounded-xl border p-4">
       <div className="mb-3 flex items-start justify-between gap-2">
         <div>
-          <p className="text-base font-medium">
-            <span aria-hidden className="mr-1">
-              {fire ? '🔥' : '⛪'}
-            </span>
+          <p className="flex items-center gap-2 text-base font-medium">
+            <Icone
+              nome={fire ? 'fire' : 'culto'}
+              className={`h-3.5 w-3.5 shrink-0 ${fire ? 'text-lima' : 'text-roxo-claro'}`}
+            />
             {dataPorExtenso(evento.data)}
           </p>
           <p className="text-muted-foreground mt-0.5 text-sm">
@@ -92,13 +99,11 @@ export function CartaoData({
                   passagemSom: o.valor === 'nao' ? false : valor.passagemSom,
                 })
               }
-              className={`flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-lg border text-sm font-medium transition-colors ${
+              className={`flex min-h-14 flex-col items-center justify-center gap-1.5 rounded-lg border text-sm font-medium transition-colors ${
                 ativo ? o.cor : 'border-border hover:bg-accent'
               }`}
             >
-              <span aria-hidden className="text-lg leading-none">
-                {o.emoji}
-              </span>
+              <Icone nome={o.icone} className="h-4 w-4" />
               {o.texto}
             </button>
           )
@@ -130,9 +135,10 @@ export function CartaoData({
             <button
               type="button"
               onClick={() => setMostrarObs(true)}
-              className="text-muted-foreground hover:text-foreground text-sm underline-offset-4 hover:underline"
+              className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-sm underline-offset-4 hover:underline"
             >
-              + adicionar observação
+              <Icone nome="adicionar" className="h-3 w-3" />
+              adicionar observação
             </button>
           )}
         </div>

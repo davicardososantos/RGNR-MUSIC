@@ -1,3 +1,5 @@
+import type { NomeIcone } from '@/components/icone'
+
 // Vocabulário do domínio — espelha supabase/migrations/0001_schema.sql
 // Os rótulos vêm de lideranca/equipe/criterios-de-nivel.md
 
@@ -52,15 +54,18 @@ export const NIVEL_LABEL: Record<NivelTecnico, string> = {
   iniciante: 'Iniciante',
 }
 
-export const STATUS_LABEL: Record<StatusMusico, { emoji: string; texto: string }> = {
-  ativo: { emoji: '✅', texto: 'Ativo' },
-  presenca_baixa: { emoji: '🕐', texto: 'Presença baixa' },
-  destreinado: { emoji: '💤', texto: 'Destreinado' },
-  em_avaliacao: { emoji: '🎓', texto: 'Em avaliação' },
-  em_formacao: { emoji: '🧪', texto: 'Em formação' },
-  restricao: { emoji: '⛔', texto: 'Restrição vigente' },
-  fora: { emoji: '📤', texto: 'Fora da banda' },
-  lideranca: { emoji: '👔', texto: 'Liderança' },
+export const STATUS_LABEL: Record<
+  StatusMusico,
+  { icone: NomeIcone; texto: string }
+> = {
+  ativo: { icone: 'statusAtivo', texto: 'Ativo' },
+  presenca_baixa: { icone: 'statusPresencaBaixa', texto: 'Presença baixa' },
+  destreinado: { icone: 'statusDestreinado', texto: 'Destreinado' },
+  em_avaliacao: { icone: 'statusEmAvaliacao', texto: 'Em avaliação' },
+  em_formacao: { icone: 'statusEmFormacao', texto: 'Em formação' },
+  restricao: { icone: 'statusRestricao', texto: 'Restrição vigente' },
+  fora: { icone: 'statusFora', texto: 'Fora da banda' },
+  lideranca: { icone: 'statusLideranca', texto: 'Liderança' },
 }
 
 export const PRESENCA_LABEL: Record<NivelPresenca, string> = {
@@ -103,11 +108,11 @@ export const PESO_NIVEL: Record<NivelTecnico, number> = {
 
 export const RESPOSTA_LABEL: Record<
   RespostaDisponibilidade,
-  { emoji: string; curto: string; longo: string }
+  { curto: string; longo: string }
 > = {
-  sim: { emoji: '✅', curto: 'Sim', longo: 'Posso tocar' },
-  se_precisar: { emoji: '🤝', curto: 'Se precisar', longo: 'Topo cobrir se precisarem' },
-  nao: { emoji: '❌', curto: 'Não', longo: 'Não consigo nesse dia' },
+  sim: { curto: 'Sim', longo: 'Posso tocar' },
+  se_precisar: { curto: 'Se precisar', longo: 'Topo cobrir se precisarem' },
+  nao: { curto: 'Não', longo: 'Não consigo nesse dia' },
 }
 
 // ------------------------------------------------------------
