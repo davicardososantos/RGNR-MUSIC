@@ -19,6 +19,7 @@ export type InstrumentoDoMusico = {
 export type MusicoParaEscala = {
   id: string
   nome: string
+  whatsapp: string | null
   status: StatusMusico
   presenca: NivelPresenca | null
   ehLider: boolean

@@ -5,6 +5,11 @@ Dois gestores (Davi e André Santos) montam a escala; ~36 músicos informam disp
 
 **Leia antes de mexer:** [docs/PRD.md](docs/PRD.md) e [docs/PLANO-TECNICO.md](docs/PLANO-TECNICO.md).
 
+**Estado:** MVP no ar em `rgnr-music.vercel.app`. Fases 0 a 4 entregues.
+A Fase 5 (página pública da escala, export em Markdown, ping contra a pausa
+do Supabase) foi cortada — as duas últimas ficaram como risco em aberto,
+registrado no PRD §9.
+
 ## Comandos
 
 ```bash
@@ -31,8 +36,11 @@ Estas regras vêm do PRD e não devem ser quebradas sem mudar o PRD antes.
    três níveis. Vive em `musico_instrumento`.
 5. **Nenhuma regra de negócio nomeia uma pessoa.** A "trava do André Lima"
    (violão ou baixo, nunca os dois) é a regra genérica `ja_escalado`.
-6. **Alerta de regra não bloqueia** — pede justificativa, que fica gravada.
-   A liderança pode fechar contra a regra conscientemente.
+6. **O app informa, não restringe** (D12). O checklist é uma lista visível,
+   nunca um portão: nada impede fechar uma escala e nada pede justificativa.
+   Ninguém é escondido de uma função por não tocar o instrumento — aparece
+   atrás de um clique, marcado. A resposta do músico vale mais que o
+   documento, porque o documento é um retrato de 30/08 e a resposta é de hoje.
 7. **Culto e Fire têm formações diferentes** (9 funções × 4). No Fire, status
    "em formação" é destaque positivo, não aviso — é o laboratório de estreia.
 8. **Nada de emoji na interface.** Todo ícone vem do Font Awesome, através de

@@ -40,7 +40,7 @@ export async function carregarEscala(data: string): Promise<DadosDaEscala | null
     db.from('funcao_instrumentos').select('*'),
     db
       .from('musicos')
-      .select('id, nome, status, presenca, eh_lider')
+      .select('id, nome, whatsapp, status, presenca, eh_lider')
       .eq('no_formulario', true)
       .order('nome'),
     db.from('musico_instrumento').select('*').eq('ativo', true),
@@ -73,6 +73,7 @@ export async function carregarEscala(data: string): Promise<DadosDaEscala | null
     return {
       id: m.id as string,
       nome: m.nome as string,
+      whatsapp: m.whatsapp as string | null,
       status: m.status,
       presenca: m.presenca,
       ehLider: m.eh_lider as boolean,

@@ -1,10 +1,10 @@
 # PRD — Escala MUSIC (Banda RGNR)
 
-**Versão:** 0.4 (decisões fechadas · lista de nomes definida · prazo definido)
+**Versão:** 0.5 (MVP entregue — Fases 0 a 4)
 **Data:** 08/09/2026
 **Autores:** Davi Cardoso · Claude
 **Aprovadores:** Davi e André Santos (liderança da Banda)
-**Status:** 🟢 pronto para revisão do André · pendências pontuais na §13
+**Status:** ✅ MVP no ar (Fases 0 a 4) · `rgnr-music.vercel.app`
 
 ---
 
@@ -448,9 +448,9 @@ escalacoes                     admins
 
 | Risco | Mitigação |
 |---|---|
-| Free tier do Supabase pausa projetos inativos (confirmar termos atuais antes de subir) | Cron semanal na Vercel dando um ping. 5 linhas de código |
-| **D8 tirou o backup natural:** a escala não existe mais em Markdown | Export mensal automático em `.md` no formato do `_modelo-escala.md`, para guardar no Obsidian. **Deixa de ser opcional** |
-| Link público = alguém responder pelo outro | Chave de edição (§5) + log das duas versões + gestor edita tudo |
+| Free tier do Supabase pausa projetos inativos | ⚠️ **Em aberto.** Era a Fase 5, cortada em 08/09. Despausar é manual, no painel do Supabase |
+| **D8 tirou o backup natural:** a escala não existe mais em Markdown | ⚠️ **Em aberto.** O export era a Fase 5, cortada. A escala vive só no Supabase |
+| Link público = alguém responder pelo outro | Resolvido: chave de edição (§5) + log das duas versões + gestor edita tudo |
 
 ---
 
@@ -491,6 +491,10 @@ O MVP deu certo se, no fim de setembro:
 
 ## 12. Fora do MVP — o roadmap que este desenho já prepara
 
+> **O MVP terminou na Fase 4** (decisão de 08/09). A página pública da escala,
+> o export em Markdown e o ping semanal contra a pausa do Supabase saíram do
+> escopo. As duas últimas viram risco em aberto, registrado na §9.
+
 Em ordem de valor:
 
 1. **Histórico de participação automático.** Depois do evento, o app já sabe quem tocou. Habilita a regra "ninguém 4 cultos seguidos" e o rodízio justo. **Subiu de prioridade por causa da D8** — com o Obsidian fora, o `historico-participacao.md` fica órfão
@@ -510,11 +514,11 @@ Em ordem de valor:
 
 | # | Pendência | Impacto | Proposta |
 |---|---|---|---|
-| P1 | **E-mail do André Santos** | Allowlist de login | — |
-| P2 | Passagem de som do culto: 15h ou 14h30? | Texto do formulário | Ver §10 |
+| P1 | Passagem de som do culto: 15h ou 14h30? | Texto exibido no formulário | O `checklist-culto.md` registra 14h30 para a banda. Está 15h. Campo editável |
 
 *Resolvido na v0.3:* lista de nomes fechada em 36 (D6/D10) — Sebastião e Matheus Ventura entram.
 *Resolvido na v0.4:* prazo de resposta = quarta 09/09, sem fechar o formulário (D11).
+*Resolvido na v0.5:* e-mail do André cadastrado, login testado e funcionando.
 
 ---
 

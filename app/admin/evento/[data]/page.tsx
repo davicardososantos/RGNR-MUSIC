@@ -76,6 +76,17 @@ export default async function EventoPage({
         musicos={musicos}
         escalacoesIniciais={escalacoes}
       />
+
+      <Link
+        href={`/admin/evento/${data}/cobertura`}
+        className="border-border hover:bg-accent flex items-center justify-between rounded-xl border px-4 py-3 text-sm transition-colors"
+      >
+        <span className="flex items-center gap-2.5">
+          <Icone nome="trocar" className="text-roxo-claro h-4 w-4" />
+          Alguém caiu? Ver quem pode cobrir
+        </span>
+        <span className="text-muted-foreground">abrir →</span>
+      </Link>
     </div>
   )
 }

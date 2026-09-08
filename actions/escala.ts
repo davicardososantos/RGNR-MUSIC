@@ -71,6 +71,58 @@ export async function desescalar(entrada: z.input<typeof removerSchema>) {
   revalidatePath('/admin')
 }
 
+const substituirSchema = z.object({
+  eventoId: z.string().uuid(),
+  data: z.string(),
+  funcaoId: z.string().max(40),
+  entraId: z.string().uuid(),
+  motivo: z.string().max(200).nullable(),
+})
+
+/**
+ * Troca o titular de uma função e registra quem saiu.
+ *
+ * Sem diálogo de confirmação e sem exigir motivo: isto é usado no domingo
+ * de manhã, com alguém já tendo avisado que não vem. Pedir justificativa
+ * ali seria atrito no pior momento possível (D12). O histórico fica em
+ * `substituiu`, que é o que interessa depois.
+ */
+export async function substituir(entrada: z.input<typeof substituirSchema>) {
+  const gestor = await exigirGestor()
+  const { eventoId, data, funcaoId, entraId, motivo } = substituirSchema.parse(entrada)
+
+  const db = servico()
+
+  const { data: atual } = await db
+    .from('escalacoes')
+    .select('id, musico_id')
+    .eq('evento_id', eventoId)
+    .eq('funcao_id', funcaoId)
+    .eq('tipo', 'titular')
+    .maybeSingle()
+
+  const { error } = await db.from('escalacoes').upsert(
+    {
+      evento_id: eventoId,
+      funcao_id: funcaoId,
+      musico_id: entraId,
+      tipo: 'titular',
+      substituiu: atual?.musico_id ?? null,
+      motivo_troca: motivo?.trim() || null,
+      confirmado: false,
+      criado_por: gestor.email,
+      criado_em: new Date().toISOString(),
+    },
+    { onConflict: 'evento_id,funcao_id,tipo' },
+  )
+
+  if (error) throw new Error(`Não consegui substituir: ${error.message}`)
+
+  revalidatePath(`/admin/evento/${data}`)
+  revalidatePath(`/admin/evento/${data}/cobertura`)
+  revalidatePath('/admin')
+}
+
 const encerrarSchema = z.object({
   eventoId: z.string().uuid(),
   data: z.string(),

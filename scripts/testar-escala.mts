@@ -34,7 +34,7 @@ const nok = (m: string) => {
 
 const [{ data: musicosBrutos }, { data: relacoes }, { data: overrides }, { data: formacao }, { data: funcoesBrutas }, { data: funcaoInstr }] =
   await Promise.all([
-    db.from('musicos').select('id, nome, status, presenca, eh_lider').eq('no_formulario', true),
+    db.from('musicos').select('id, nome, whatsapp, status, presenca, eh_lider').eq('no_formulario', true),
     db.from('musico_instrumento').select('*'),
     db.from('musico_funcao_ordem').select('*'),
     db.from('formacao').select('*').order('ordem'),
@@ -51,6 +51,7 @@ function montarMusicos(): MusicoParaEscala[] {
     return {
       id: m.id as string,
       nome: m.nome as string,
+      whatsapp: m.whatsapp as string | null,
       status: m.status,
       presenca: m.presenca,
       ehLider: m.eh_lider as boolean,

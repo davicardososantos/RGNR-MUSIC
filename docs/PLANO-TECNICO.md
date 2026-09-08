@@ -468,14 +468,25 @@ Todas checam sessão de gestor, exceto as três primeiras.
 - Substituição com registro de motivo
 - ✅ *Entregável: a tela do "fulano caiu, e agora"*
 
-### Fase 5 — Fechamento
-- `/escala/[data]` público read-only
-- Export `.md` (backup — deixou de ser opcional por causa da D8)
-- Cron semanal de ping (Supabase free tier)
-- ✅ *Entregável: setembro inteiro rodando no sistema*
+### ~~Fase 5~~ — cortada
 
-### Fase 6 — Pós-MVP
-Histórico automático (destrava a checagem #7), confirmação do escalado, recorrência de eventos.
+Decisão do Davi em 08/09: o MVP termina na Fase 4. Ficaram de fora a página
+pública da escala (`/escala/[data]`), o export em Markdown e o ping semanal.
+
+**Duas consequências que ficam registradas, não resolvidas:**
+
+| Item | Situação |
+|---|---|
+| **Backup** | A D8 aposentou o `2026-09.md` do Obsidian, e o export que substituiria não foi feito. A escala existe **só no Supabase**. Perder o projeto é perder a escala |
+| **Pausa do free tier** | O Supabase pausa projeto sem atividade por alguns dias. Com uso mensal, pode acontecer entre um mês e outro. Não é perda de dados — é despausar no painel, mas o formulário fica fora do ar até alguém perceber |
+
+Nenhuma das duas impede o uso de setembro. Ambas são de 15 minutos de
+trabalho quando incomodarem.
+
+### Depois do MVP
+
+Histórico automático de participação (destrava a checagem do 4º culto
+seguido), confirmação do escalado pelo próprio link, recorrência de eventos.
 
 ---
 
