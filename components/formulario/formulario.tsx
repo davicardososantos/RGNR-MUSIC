@@ -80,12 +80,27 @@ export function Formulario({
   )
 
   function mudarResposta(eventoId: string, valor: RespostaLocal) {
+    const antes = respostas[eventoId] ?? VAZIA
+    const mudouSoOTexto =
+      antes.resposta === valor.resposta && antes.passagemSom === valor.passagemSom
+
     setRespostas((r) => ({ ...r, [eventoId]: valor }))
     setSalvos((s) => ({ ...s, [eventoId]: false }))
 
-    const anterior = timers.current.get(eventoId)
-    if (anterior) clearTimeout(anterior)
+    const pendente = timers.current.get(eventoId)
+    if (pendente) clearTimeout(pendente)
 
+    // Toque em Sim/Se precisar/Não grava na hora. Esperar 700ms abria uma
+    // janela real de perda: no celular a pessoa marca a última data e sai
+    // do navegador no mesmo segundo.
+    if (!mudouSoOTexto) {
+      timers.current.delete(eventoId)
+      if (slug) void gravar(eventoId, valor, slug)
+      return
+    }
+
+    // Só a observação é digitada, e aí a espera evita uma ida ao servidor
+    // por tecla.
     const t = setTimeout(() => {
       timers.current.delete(eventoId)
       if (slug) void gravar(eventoId, valor, slug)
@@ -223,13 +238,31 @@ export function Formulario({
           </p>
         </div>
 
-        <div className="bg-muted/50 flex items-center justify-between rounded-lg px-3 py-2 text-sm">
-          <span>
-            {respondidas} de {eventos.length} respondidas
-          </span>
-          {prazo && (
-            <span className="text-muted-foreground">até {diaEMes(prazo)}</span>
-          )}
+        <div className="bg-muted/50 space-y-2 rounded-lg px-3 py-2.5">
+          <div className="flex items-center justify-between text-sm">
+            <span>
+              {respondidas === eventos.length ? (
+                <span className="text-lima flex items-center gap-1.5">
+                  <Icone nome="sim" className="h-3.5 w-3.5" />
+                  todas as {eventos.length} respondidas
+                </span>
+              ) : (
+                `${respondidas} de ${eventos.length} respondidas`
+              )}
+            </span>
+            {prazo && (
+              <span className="text-muted-foreground">até {diaEMes(prazo)}</span>
+            )}
+          </div>
+          <div className="bg-muted h-1 overflow-hidden rounded-full">
+            <div
+              className="bg-lima h-full rounded-full transition-all"
+              style={{ width: `${(respondidas / eventos.length) * 100}%` }}
+            />
+          </div>
+          <p className="text-muted-foreground text-xs">
+            Salva sozinho a cada toque. Você não precisa apertar nada no final.
+          </p>
         </div>
 
         <div className="space-y-3">
@@ -252,7 +285,11 @@ export function Formulario({
           disabled={respondidas === 0}
           className="h-12 w-full text-base"
         >
-          {respondidas === 0 ? 'Marque pelo menos uma data' : 'Concluir'}
+          {respondidas === 0
+            ? 'Marque pelo menos uma data'
+            : respondidas < eventos.length
+              ? `Concluir (faltam ${eventos.length - respondidas})`
+              : 'Concluir'}
         </Button>
       </div>
     )

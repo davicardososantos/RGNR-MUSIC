@@ -81,8 +81,8 @@ export async function salvarDados(entrada: z.input<typeof dadosSchema>) {
 
   const jaTem = new Set((existentes ?? []).map((r) => r.instrumento_id as string))
 
-  // Novos instrumentos entram sem nível: quem define nível é a liderança,
-  // não o próprio músico. Entram como 'reserva' até alguém avaliar.
+  // Instrumento novo entra sem nível: quem avalia nível é a liderança, não o
+  // próprio músico. Fica como 'reserva' até alguém olhar.
   const novos = informados
     .filter((i) => !jaTem.has(i))
     .map((instrumento_id) => ({
@@ -91,17 +91,21 @@ export async function salvarDados(entrada: z.input<typeof dadosSchema>) {
       nivel: null,
       principal: instrumento_id === principal,
       ordem: 'reserva' as const,
+      ativo: true,
     }))
 
   if (novos.length) await db.from('musico_instrumento').insert(novos)
 
-  // Só ajustamos a marcação de principal. NÃO apagamos instrumentos que o
-  // músico desmarcou: a linha carrega o nível definido pela liderança, e
-  // perder isso é pior que ficar com um instrumento a mais na lista.
+  // O que o músico respondeu é a verdade sobre o que ele toca (PRD §5.1).
+  // Desmarcar desativa a linha em vez de apagá-la: o nível que a liderança
+  // definiu fica guardado para quando ele voltar a marcar.
   for (const instrumento_id of jaTem) {
     await db
       .from('musico_instrumento')
-      .update({ principal: instrumento_id === principal })
+      .update({
+        principal: instrumento_id === principal,
+        ativo: informados.includes(instrumento_id),
+      })
       .eq('musico_id', musico.id)
       .eq('instrumento_id', instrumento_id)
   }

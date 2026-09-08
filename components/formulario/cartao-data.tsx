@@ -62,7 +62,11 @@ export function CartaoData({
   const horaPassagem = hora(evento.hora_passagem)
 
   return (
-    <div className="border-border rounded-xl border p-4">
+    <div
+      className={`rounded-xl border p-4 transition-colors ${
+        valor.resposta === null ? 'border-roxo/40 bg-roxo/5' : 'border-border'
+      }`}
+    >
       <div className="mb-3 flex items-start justify-between gap-2">
         <div>
           <p className="flex items-center gap-2 text-base font-medium">
@@ -80,8 +84,19 @@ export function CartaoData({
             {horaPassagem && ` · passagem ${horaPassagem}`}
           </p>
         </div>
-        {salvo && (
-          <span className="text-muted-foreground shrink-0 pt-1 text-xs">salvo</span>
+        {valor.resposta === null ? (
+          <span className="text-muted-foreground shrink-0 pt-1 text-xs">
+            falta responder
+          </span>
+        ) : salvo ? (
+          <span className="text-lima flex shrink-0 items-center gap-1 pt-1 text-xs">
+            <Icone nome="sim" className="h-3 w-3" />
+            salvo
+          </span>
+        ) : (
+          <span className="text-muted-foreground shrink-0 pt-1 text-xs">
+            salvando…
+          </span>
         )}
       </div>
 

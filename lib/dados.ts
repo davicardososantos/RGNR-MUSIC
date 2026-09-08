@@ -70,7 +70,8 @@ export async function carregarMeusDados(musicoId: string): Promise<MeusDados> {
     db
       .from('musico_instrumento')
       .select('instrumento_id, principal')
-      .eq('musico_id', musicoId),
+      .eq('musico_id', musicoId)
+      .eq('ativo', true),
   ])
 
   const principal = relacoes?.find((r) => r.principal)?.instrumento_id ?? null

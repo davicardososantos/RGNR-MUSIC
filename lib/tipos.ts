@@ -139,6 +139,8 @@ export type MusicoInstrumento = {
   principal: boolean
   ordem: OrdemEscala
   observacao: string | null
+  /** false = o músico informou que não toca isso. O nível fica guardado. */
+  ativo: boolean
 }
 
 export type Instrumento = {

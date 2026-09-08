@@ -54,7 +54,7 @@ export function PassoDados({
           </button>
         </div>
         <p className="text-muted-foreground text-sm">
-          Confere se está certo. É rapidinho, e só uma vez.
+          Confere se está certo. Depois disso vêm as datas, que é o que importa.
         </p>
       </div>
 
@@ -138,7 +138,7 @@ export function PassoDados({
         disabled={salvando}
         className="h-12 w-full text-base"
       >
-        {salvando ? 'Salvando…' : 'Continuar'}
+        {salvando ? 'Salvando…' : 'Continuar para as datas'}
       </Button>
     </div>
   )
