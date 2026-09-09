@@ -30,8 +30,8 @@ export function mensagemCobranca(primeiroNome: string, url: string) {
     `Oi, ${primeiroNome}! Tudo bem?\n\n` +
     `Ainda falta você marcar sua disponibilidade de setembro. ` +
     `Leva menos de dois minutos:\n${url}\n\n` +
-    `Marcar que pode não quer dizer que você já está escalado, ` +
-    `é só pra gente saber com quem contar. Valeu!`
+    `Sua resposta ajuda demais na hora de montar a escala. ` +
+    `Vai ser muito bom ter você com a gente!`
   )
 }
 
