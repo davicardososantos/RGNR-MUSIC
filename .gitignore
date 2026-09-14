@@ -42,3 +42,7 @@ next-env.d.ts
 
 # .env.example é referência, deve ser versionado
 !.env.example
+
+# Dumps do banco — contêm WhatsApp e dados pessoais dos 37 músicos.
+# A D7 (privacidade) vale aqui também: backup fica local, nunca no git.
+/supabase/backups/
