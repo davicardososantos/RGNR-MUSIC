@@ -1,5 +1,6 @@
 import 'server-only'
 import { servico } from '@/lib/supabase/service'
+import { hojeISO } from '@/lib/datas'
 import type {
   Evento,
   NivelPresenca,
@@ -13,6 +14,9 @@ export type ResumoEvento = {
   sePrecisar: number
   nao: number
   responderam: number
+  /** Posições da formação já preenchidas — o "3 de 9" do painel. */
+  preenchidas: number
+  posicoes: number
 }
 
 export type LinhaResposta = {
@@ -30,39 +34,109 @@ export type LinhaResposta = {
 }
 
 export type PainelDoMes = {
-  eventos: ResumoEvento[]
+  /** Hoje e daqui pra frente, do mais próximo ao mais distante. */
+  proximos: ResumoEvento[]
+  /** Já aconteceu, do mais recente ao mais antigo. */
+  historico: ResumoEvento[]
   totalMusicos: number
   responderamAlgo: number
 }
 
-export async function carregarPainelDoMes(): Promise<PainelDoMes> {
+/**
+ * Tudo que o painel precisa, numa ida só ao banco.
+ *
+ * A separação entre próximos e histórico passou a existir quando as escalas
+ * de setembro que já aconteceram foram importadas: sem isso, a Conferência
+ * de 04/09 aparecia no topo da lista de trabalho como se ainda desse para
+ * montar.
+ */
+async function carregarEventos() {
   const db = servico()
 
-  const [{ data: eventos }, { data: disponibilidades }, { count: totalMusicos }] =
-    await Promise.all([
-      db.from('eventos').select('*').order('data'),
-      db.from('disponibilidades').select('evento_id, musico_id, resposta'),
-      db
-        .from('musicos')
-        .select('*', { count: 'exact', head: true })
-        .eq('no_formulario', true),
-    ])
+  const [
+    { data: eventos },
+    { data: disponibilidades },
+    { data: escalacoes },
+    { data: formacao },
+    { count: totalMusicos },
+  ] = await Promise.all([
+    db.from('eventos').select('*').order('data'),
+    db.from('disponibilidades').select('evento_id, musico_id, resposta'),
+    db.from('escalacoes').select('evento_id, funcao_id'),
+    db.from('formacao').select('tipo, funcao_id'),
+    db
+      .from('musicos')
+      .select('*', { count: 'exact', head: true })
+      .eq('no_formulario', true),
+  ])
 
   const linhas = disponibilidades ?? []
+  const escaladas = escalacoes ?? []
+
+  const posicoesPorTipo = new Map<string, number>()
+  for (const f of formacao ?? []) {
+    posicoesPorTipo.set(
+      f.tipo as string,
+      (posicoesPorTipo.get(f.tipo as string) ?? 0) + 1,
+    )
+  }
+
+  const resumos: ResumoEvento[] = ((eventos ?? []) as Evento[]).map((evento) => {
+    const doEvento = linhas.filter((l) => l.evento_id === evento.id)
+    // Revezamento coloca duas pessoas na mesma função: contar funções
+    // distintas, senão "10 de 9 posições".
+    const funcoesCobertas = new Set(
+      escaladas
+        .filter((e) => e.evento_id === evento.id)
+        .map((e) => e.funcao_id as string),
+    )
+
+    return {
+      evento,
+      sim: doEvento.filter((l) => l.resposta === 'sim').length,
+      sePrecisar: doEvento.filter((l) => l.resposta === 'se_precisar').length,
+      nao: doEvento.filter((l) => l.resposta === 'nao').length,
+      responderam: doEvento.length,
+      preenchidas: funcoesCobertas.size,
+      posicoes: posicoesPorTipo.get(evento.tipo) ?? 0,
+    }
+  })
+
+  const hoje = hojeISO()
 
   return {
     totalMusicos: totalMusicos ?? 0,
     responderamAlgo: new Set(linhas.map((l) => l.musico_id)).size,
-    eventos: ((eventos ?? []) as Evento[]).map((evento) => {
-      const doEvento = linhas.filter((l) => l.evento_id === evento.id)
-      return {
-        evento,
-        sim: doEvento.filter((l) => l.resposta === 'sim').length,
-        sePrecisar: doEvento.filter((l) => l.resposta === 'se_precisar').length,
-        nao: doEvento.filter((l) => l.resposta === 'nao').length,
-        responderam: doEvento.length,
-      }
-    }),
+    proximos: resumos.filter((r) => r.evento.data >= hoje),
+    historico: resumos.filter((r) => r.evento.data < hoje).reverse(),
+  }
+}
+
+export async function carregarPainelDoMes(): Promise<PainelDoMes> {
+  return carregarEventos()
+}
+
+export type InicioAdmin = {
+  proximo: ResumoEvento | null
+  totalMusicos: number
+  responderamAlgo: number
+  faltamResponder: number
+  qtdProximos: number
+  qtdHistorico: number
+}
+
+/** O resumo da tela inicial: o que vem agora e o que está pendente. */
+export async function carregarInicioAdmin(): Promise<InicioAdmin> {
+  const { proximos, historico, totalMusicos, responderamAlgo } =
+    await carregarEventos()
+
+  return {
+    proximo: proximos[0] ?? null,
+    totalMusicos,
+    responderamAlgo,
+    faltamResponder: Math.max(totalMusicos - responderamAlgo, 0),
+    qtdProximos: proximos.length,
+    qtdHistorico: historico.length,
   }
 }
 

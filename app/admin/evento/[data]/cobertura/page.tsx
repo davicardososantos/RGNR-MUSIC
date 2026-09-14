@@ -4,35 +4,38 @@ import { Icone } from '@/components/icone'
 import { Cobertura } from '@/components/escala/cobertura'
 import { carregarEscala } from '@/lib/dados-escala'
 import { dataPorExtenso } from '@/lib/datas'
+import { EVENTO_LABEL } from '@/lib/tipos'
 
 export const dynamic = 'force-dynamic'
 
 export default async function CoberturaPage({
   params,
+  searchParams,
 }: PageProps<'/admin/evento/[data]/cobertura'>) {
   const { data } = await params
-  const escala = await carregarEscala(data)
+  const { tipo } = await searchParams
+  const escala = await carregarEscala(
+    data,
+    typeof tipo === 'string' ? tipo : undefined,
+  )
 
   if (!escala) notFound()
 
   const { evento, funcoes, musicos, escalacoes } = escala
-  const fire = evento.tipo === 'fire'
+  const rotulo = EVENTO_LABEL[evento.tipo]
 
   return (
     <div className="space-y-6">
       <div className="space-y-2">
         <Link
-          href={`/admin/evento/${data}`}
+          href={`/admin/evento/${data}?tipo=${evento.tipo}`}
           className="text-muted-foreground hover:text-foreground text-sm"
         >
           ← voltar para a escala
         </Link>
 
         <h1 className="flex items-center gap-2.5 text-2xl font-semibold tracking-tight">
-          <Icone
-            nome={fire ? 'fire' : 'culto'}
-            className={`h-5 w-5 shrink-0 ${fire ? 'text-lima' : 'text-roxo-claro'}`}
-          />
+          <Icone nome={rotulo.icone} className={`h-5 w-5 shrink-0 ${rotulo.cor}`} />
           Quem pode cobrir
         </h1>
 

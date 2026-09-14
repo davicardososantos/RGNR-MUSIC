@@ -2,11 +2,18 @@ import {
   faArrowRightArrowLeft,
   faBan,
   faBed,
+  faCalendarDays,
+  faChevronRight,
   faClock,
+  faClockRotateLeft,
+  faComments,
   faFlask,
   faGraduationCap,
   faRightFromBracket,
+  faUserGroup,
+  faUsers,
   faUserTie,
+  faWandMagicSparkles,
   faCheck,
   faChurch,
   faCircleCheck,
@@ -41,6 +48,15 @@ export const ICONES = {
   // Tipos de evento
   fire: faFire,
   culto: faChurch,
+  conferencia: faUsers,
+  atmosfera: faWandMagicSparkles,
+
+  // Navegação do painel
+  escala: faCalendarDays,
+  respostas: faComments,
+  historico: faClockRotateLeft,
+  pessoas: faUserGroup,
+  avancar: faChevronRight,
 
   // Estados e ações
   concluido: faCircleCheck,

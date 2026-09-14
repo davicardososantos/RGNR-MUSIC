@@ -5,6 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Textarea } from '@/components/ui/textarea'
 import { Icone, type NomeIcone } from '@/components/icone'
 import { dataPorExtenso, hora } from '@/lib/datas'
+import { EVENTO_LABEL, nomeDoEvento } from '@/lib/tipos'
 import type { Evento, RespostaDisponibilidade } from '@/lib/tipos'
 
 export type RespostaLocal = {
@@ -57,7 +58,7 @@ export function CartaoData({
 }) {
   const [mostrarObs, setMostrarObs] = useState(Boolean(valor.observacao))
 
-  const fire = evento.tipo === 'fire'
+  const rotulo = EVENTO_LABEL[evento.tipo]
   const disponivel = valor.resposta === 'sim' || valor.resposta === 'se_precisar'
   const horaPassagem = hora(evento.hora_passagem)
 
@@ -71,15 +72,13 @@ export function CartaoData({
         <div>
           <p className="flex items-center gap-2 text-base font-medium">
             <Icone
-              nome={fire ? 'fire' : 'culto'}
-              className={`h-3.5 w-3.5 shrink-0 ${fire ? 'text-lima' : 'text-roxo-claro'}`}
+              nome={rotulo.icone}
+              className={`h-3.5 w-3.5 shrink-0 ${rotulo.cor}`}
             />
             {dataPorExtenso(evento.data)}
           </p>
           <p className="text-muted-foreground mt-0.5 text-sm">
-            <span className={fire ? 'text-lima' : 'text-roxo-claro'}>
-              {evento.titulo ?? (fire ? 'Fire' : 'Culto')}
-            </span>{' '}
+            <span className={rotulo.cor}>{nomeDoEvento(evento)}</span>{' '}
             · {hora(evento.hora_evento)}
             {horaPassagem && ` · passagem ${horaPassagem}`}
           </p>

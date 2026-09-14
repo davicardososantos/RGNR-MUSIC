@@ -37,10 +37,19 @@ export type OrdemEscala =
   | 'formacao'
   | 'indisponivel'
 
-export type TipoEvento = 'culto' | 'fire' | 'kids' | 'especial'
+export type TipoEvento =
+  | 'culto'
+  | 'fire'
+  | 'kids'
+  | 'especial'
+  | 'conferencia'
+  | 'atmosfera'
 export type StatusEvento = 'rascunho' | 'publicada' | 'fechada'
 export type RespostaDisponibilidade = 'sim' | 'se_precisar' | 'nao'
 export type TipoEscalacao = 'titular' | 'plano_b'
+
+/** De onde vem o músico. Só 'music' entra no rodízio de escala. */
+export type BandaOrigem = 'music' | 'j_rapha' | 'convidado'
 
 // ------------------------------------------------------------
 // Rótulos para a interface
@@ -115,6 +124,59 @@ export const RESPOSTA_LABEL: Record<
   nao: { curto: 'Não', longo: 'Não consigo nesse dia' },
 }
 
+/**
+ * Como cada tipo de evento aparece na interface.
+ *
+ * Existe para acabar com o `tipo === 'fire' ? ... : ...` espalhado pelas
+ * telas: com 6 tipos, o ternário passou a mentir — Conferência e Atmosfera
+ * apareciam como "Culto". A paleta é só lima e roxo de propósito
+ * (globals.css); nada de cor nova por tipo.
+ */
+export const EVENTO_LABEL: Record<
+  TipoEvento,
+  { nome: string; icone: NomeIcone; cor: string; fundo: string }
+> = {
+  culto: {
+    nome: 'Culto',
+    icone: 'culto',
+    cor: 'text-roxo-claro',
+    fundo: 'bg-roxo/15',
+  },
+  fire: { nome: 'Fire', icone: 'fire', cor: 'text-lima', fundo: 'bg-lima/10' },
+  conferencia: {
+    nome: 'Conferência',
+    icone: 'conferencia',
+    cor: 'text-lima-clara',
+    fundo: 'bg-lima/10',
+  },
+  atmosfera: {
+    nome: 'Atmosfera',
+    icone: 'atmosfera',
+    cor: 'text-roxo',
+    fundo: 'bg-roxo/15',
+  },
+  kids: {
+    nome: 'Kids',
+    icone: 'musica',
+    cor: 'text-muted-foreground',
+    fundo: 'bg-muted/50',
+  },
+  especial: {
+    nome: 'Especial',
+    icone: 'musica',
+    cor: 'text-muted-foreground',
+    fundo: 'bg-muted/50',
+  },
+}
+
+/** O rótulo do evento: o título escrito pela liderança ganha do tipo. */
+export function nomeDoEvento(evento: {
+  tipo: TipoEvento
+  titulo: string | null
+}): string {
+  return evento.titulo ?? EVENTO_LABEL[evento.tipo].nome
+}
+
 // ------------------------------------------------------------
 // Linhas do banco
 // ------------------------------------------------------------
@@ -130,6 +192,8 @@ export type Musico = {
   eh_lider: boolean
   nota: string | null
   no_formulario: boolean
+  /** Apoio externo (J Rapha, convidado) fica fora do rodízio. */
+  banda: BandaOrigem
 }
 
 export type MusicoInstrumento = {
@@ -200,4 +264,6 @@ export type Escalacao = {
   motivo_troca: string | null
   criado_por: string | null
   criado_em: string
+  /** Contexto da escalação — ex.: "revezou com o Gabriel". */
+  observacao: string | null
 }

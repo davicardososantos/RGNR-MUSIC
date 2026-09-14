@@ -14,14 +14,24 @@ export type DadosDaEscala = {
   escalacoes: EscalacaoAtual[]
 }
 
-export async function carregarEscala(data: string): Promise<DadosDaEscala | null> {
+/**
+ * @param tipo desempata quando o dia tem mais de um evento.
+ *
+ * Desde 05/09/2026 isso acontece de verdade: Conferência à noite e
+ * Atmosfera à tarde na mesma data. O `maybeSingle()` anterior devolvia erro
+ * nesse caso e derrubava a página. Sem `tipo`, vale o mais cedo do dia.
+ */
+export async function carregarEscala(
+  data: string,
+  tipo?: string,
+): Promise<DadosDaEscala | null> {
   const db = servico()
 
-  const { data: evento } = await db
-    .from('eventos')
-    .select('*')
-    .eq('data', data)
-    .maybeSingle()
+  let consulta = db.from('eventos').select('*').eq('data', data)
+  if (tipo) consulta = consulta.eq('tipo', tipo)
+
+  const { data: encontrados } = await consulta.order('hora_evento')
+  const evento = encontrados?.[0]
 
   if (!evento) return null
 

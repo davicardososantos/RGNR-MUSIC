@@ -151,7 +151,14 @@ async function main() {
   const porSlug = new Map(musicos.map((m) => [m.slug, m]));
 
   // As migrations de 14/09 já rodaram?
-  const temBanda = Object.prototype.hasOwnProperty.call(musicos[0] ?? {}, "banda");
+  // Perguntar pela coluna direto: derivar de um select que não a pede
+  // dá falso negativo.
+  let temBanda = false;
+  try {
+    await api("musicos?select=banda&limit=1");
+    temBanda = true;
+  } catch { /* coluna ainda não existe */ }
+
   let temTiposNovos = false;
   try {
     await api("formacao?select=tipo&tipo=eq.conferencia&limit=1");

@@ -18,7 +18,13 @@ export default async function AdminLayout({ children }: LayoutProps<'/admin'>) {
         <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-4 px-4 py-3">
           <nav className="flex items-center gap-4 text-sm">
             <Link href="/admin" className="font-medium">
-              Escala
+              Painel
+            </Link>
+            <Link
+              href="/admin/escala"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Escalas
             </Link>
             <Link
               href="/admin/respostas"

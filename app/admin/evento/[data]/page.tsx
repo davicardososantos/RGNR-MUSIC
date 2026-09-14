@@ -4,19 +4,27 @@ import { Icone } from '@/components/icone'
 import { Montador } from '@/components/escala/montador'
 import { carregarEscala } from '@/lib/dados-escala'
 import { dataPorExtenso, hora } from '@/lib/datas'
+import { EVENTO_LABEL, nomeDoEvento } from '@/lib/tipos'
 
 export const dynamic = 'force-dynamic'
 
 export default async function EventoPage({
   params,
+  searchParams,
 }: PageProps<'/admin/evento/[data]'>) {
   const { data } = await params
-  const escala = await carregarEscala(data)
+  // ?tipo= desempata os dias com mais de um evento (ver carregarEscala).
+  const { tipo } = await searchParams
+  const escala = await carregarEscala(
+    data,
+    typeof tipo === 'string' ? tipo : undefined,
+  )
 
   if (!escala) notFound()
 
   const { evento, funcoes, musicos, escalacoes } = escala
   const fire = evento.tipo === 'fire'
+  const rotulo = EVENTO_LABEL[evento.tipo]
 
   const podem = musicos.filter((m) => m.resposta === 'sim').length
   const sePrecisar = musicos.filter((m) => m.resposta === 'se_precisar').length
@@ -33,15 +41,12 @@ export default async function EventoPage({
         </Link>
 
         <h1 className="flex items-center gap-2.5 text-2xl font-semibold tracking-tight">
-          <Icone
-            nome={fire ? 'fire' : 'culto'}
-            className={`h-5 w-5 shrink-0 ${fire ? 'text-lima' : 'text-roxo-claro'}`}
-          />
+          <Icone nome={rotulo.icone} className={`h-5 w-5 shrink-0 ${rotulo.cor}`} />
           {dataPorExtenso(evento.data)}
         </h1>
 
         <p className="text-muted-foreground text-sm">
-          {evento.titulo ?? (fire ? 'Fire' : 'Culto')} · {hora(evento.hora_evento)}
+          {nomeDoEvento(evento)} · {hora(evento.hora_evento)}
           {evento.hora_passagem && ` · passagem ${hora(evento.hora_passagem)}`}
           {' · '}
           {funcoes.length} posições
