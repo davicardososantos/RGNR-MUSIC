@@ -7,6 +7,7 @@ import {
   listarEventosAbertosDoMes,
   listarInstrumentos,
   listarMusicosDoFormulario,
+  musicosComRespostaNoMes,
 } from '@/lib/dados'
 
 /** O título da aba e a descrição, a partir do mês da rota. */
@@ -29,7 +30,7 @@ export function metadataDoMes(mes: number) {
 export async function PaginaDoMes({ ano, mes }: { ano: number; mes: number }) {
   const nome = nomeDoMes(mes)
 
-  const [musicos, eventos, instrumentos, jaRespondidos] = await Promise.all([
+  const [musicos, eventos, instrumentos, desteNavegador] = await Promise.all([
     listarMusicosDoFormulario(),
     listarEventosAbertosDoMes(ano, mes),
     listarInstrumentos(),
@@ -50,6 +51,12 @@ export async function PaginaDoMes({ ano, mes }: { ano: number; mes: number }) {
       </main>
     )
   }
+
+  // Depois do retorno acima: sem data aberta não há o que conferir.
+  const jaRespondidos = await musicosComRespostaNoMes(
+    desteNavegador,
+    eventos.map((e) => e.id),
+  )
 
   const prazo = eventos.find((e) => e.prazo_resposta)?.prazo_resposta ?? null
 

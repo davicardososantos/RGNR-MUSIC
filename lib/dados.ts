@@ -55,6 +55,34 @@ export async function listarEventosAbertosDoMes(
   return (data ?? []) as Evento[]
 }
 
+/**
+ * Dos músicos deste navegador, quais já responderam alguma data do mês.
+ *
+ * A chave de edição é do aparelho e não tem mês: quem respondeu setembro
+ * neste celular continua com a chave quando outubro abre. Se o selo "já
+ * respondeu" saísse só da chave, outubro nasceria marcado em cima de quem
+ * ainda não respondeu nada.
+ *
+ * Continua restrito aos músicos deste navegador. Perguntar pela lista toda
+ * diria quem já respondeu e quem não, e isso não é da conta de quem abre o
+ * formulário (D7).
+ */
+export async function musicosComRespostaNoMes(
+  musicoIds: string[],
+  eventoIds: string[],
+): Promise<string[]> {
+  if (musicoIds.length === 0 || eventoIds.length === 0) return []
+
+  const { data, error } = await servico()
+    .from('disponibilidades')
+    .select('musico_id')
+    .in('musico_id', musicoIds)
+    .in('evento_id', eventoIds)
+
+  if (error) throw new Error(`Falha ao conferir respostas: ${error.message}`)
+  return [...new Set((data ?? []).map((l) => l.musico_id as string))]
+}
+
 export async function listarInstrumentos(): Promise<Instrumento[]> {
   const { data, error } = await servico()
     .from('instrumentos')

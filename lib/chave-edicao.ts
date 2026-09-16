@@ -78,7 +78,12 @@ export async function registrarChave(musicoId: string, token: string) {
     )
 }
 
-/** Quais músicos este navegador já respondeu (para voltar direto na resposta). */
+/**
+ * Os músicos cuja chave está neste navegador.
+ *
+ * Não é "quem já respondeu o mês": a chave é do aparelho e não tem mês.
+ * Quem quer o selo do mês cruza isto com `musicosComRespostaNoMes`.
+ */
 export async function musicosDesteNavegador(): Promise<string[]> {
   const token = await lerToken()
   if (!token) return []
