@@ -1,3 +1,5 @@
+import { MES_OFICIAL, nomeDoMes } from '@/lib/datas'
+
 /**
  * O WhatsApp vem digitado à mão pelo músico no formulário, em qualquer
  * formato: "(11) 98765-4321", "11987654321", "+55 11 98765 4321".
@@ -28,7 +30,7 @@ export function linkWhatsApp(telefone: string | null, mensagem: string): string 
 export function mensagemCobranca(primeiroNome: string, url: string) {
   return (
     `Oi, ${primeiroNome}! Tudo bem?\n\n` +
-    `Ainda falta você marcar sua disponibilidade de setembro. ` +
+    `Ainda falta você marcar sua disponibilidade de ${nomeDoMes(MES_OFICIAL.mes)}. ` +
     `Leva menos de dois minutos:\n${url}\n\n` +
     `Sua resposta ajuda demais na hora de montar a escala. ` +
     `Vai ser muito bom ter você com a gente!`

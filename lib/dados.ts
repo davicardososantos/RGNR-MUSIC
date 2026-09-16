@@ -1,5 +1,6 @@
 import 'server-only'
 import { servico } from '@/lib/supabase/service'
+import { limitesDoMes } from '@/lib/datas'
 import type { Evento, Instrumento, Musico } from '@/lib/tipos'
 
 export type MusicoDaLista = Pick<Musico, 'id' | 'nome' | 'slug'>
@@ -29,12 +30,25 @@ export async function listarMusicosDoFormulario(): Promise<MusicoDaLista[]> {
   return data ?? []
 }
 
-/** Eventos abertos para resposta, na ordem do calendário. */
-export async function listarEventosAbertos(): Promise<Evento[]> {
+/**
+ * Eventos abertos para resposta dentro de um mês, na ordem do calendário.
+ *
+ * O recorte por mês existe porque os meses se sobrepõem: quando outubro
+ * abre, as últimas datas de setembro ainda estão recebendo resposta. Cada
+ * formulário mostra só o que é dele.
+ */
+export async function listarEventosAbertosDoMes(
+  ano: number,
+  mes: number,
+): Promise<Evento[]> {
+  const { inicio, fim } = limitesDoMes(ano, mes)
+
   const { data, error } = await servico()
     .from('eventos')
     .select('*')
     .eq('aberto_para_resposta', true)
+    .gte('data', inicio)
+    .lte('data', fim)
     .order('data')
 
   if (error) throw new Error(`Falha ao listar eventos: ${error.message}`)

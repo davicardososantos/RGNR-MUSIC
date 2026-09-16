@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { servico } from '@/lib/supabase/service'
 import { gestorAtual } from '@/lib/supabase/sessao'
+import { nomeDoMes } from '@/lib/datas'
 
 async function exigirGestor() {
   const gestor = await gestorAtual()
@@ -146,5 +147,6 @@ export async function alternarRespostas(entrada: z.input<typeof encerrarSchema>)
   if (error) throw new Error(error.message)
   revalidatePath(`/admin/evento/${data}`)
   revalidatePath('/admin')
-  revalidatePath('/setembro')
+  // A data manda: fechar 10/10 revalida /outubro, não o mês que está oficial.
+  revalidatePath(`/${nomeDoMes(Number(data.slice(5, 7)))}`)
 }

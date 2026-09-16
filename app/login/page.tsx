@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { FormLogin } from '@/components/admin/form-login'
 import { gestorAtual } from '@/lib/supabase/sessao'
+import { MES_OFICIAL } from '@/lib/datas'
 
 export const metadata = { title: 'Entrar — Escala MUSIC' }
 export const dynamic = 'force-dynamic'
@@ -32,7 +33,7 @@ export default async function LoginPage({
 
       <p className="text-muted-foreground mt-8 text-center text-xs">
         Procurando o formulário de disponibilidade?{' '}
-        <a href="/setembro" className="underline underline-offset-4">
+        <a href={`/${MES_OFICIAL.slug}`} className="underline underline-offset-4">
           É por aqui
         </a>
         .

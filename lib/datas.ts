@@ -86,3 +86,40 @@ export function hora(valor: string | null) {
   const [h, m] = valor.split(':')
   return m && m !== '00' ? `${Number(h)}h${m}` : `${Number(h)}h`
 }
+
+// ------------------------------------------------------------
+// O mês do formulário
+// ------------------------------------------------------------
+
+/**
+ * O mês que o formulário oficial cobre.
+ *
+ * É para cá que a raiz do site manda e é este o link que a liderança cola
+ * na cobrança do WhatsApp. Na virada do mês, muda só esta constante e cria
+ * a rota nova em `app/`: o mês anterior continua no ar, no endereço dele,
+ * porque as últimas datas dele ainda estão recebendo resposta.
+ */
+export const MES_OFICIAL = { slug: 'outubro', mes: 10 } as const
+
+/** 10 vira 'outubro'. Mês de 1 a 12, como as pessoas contam. */
+export function nomeDoMes(mes: number) {
+  return MES[mes - 1]
+}
+
+/**
+ * Primeiro e último dia do mês, em 'AAAA-MM-DD'.
+ *
+ * Serve para recortar os eventos de um mês só. Sem o recorte, o formulário
+ * de outubro herdaria as sextas de setembro que continuam abertas, e o
+ * músico veria 14 cartões embaixo do título de outubro.
+ */
+export function limitesDoMes(ano: number, mes: number) {
+  const dois = (n: number) => String(n).padStart(2, '0')
+  // Dia 0 do mês seguinte é o último dia deste.
+  const ultimo = new Date(ano, mes, 0).getDate()
+
+  return {
+    inicio: `${ano}-${dois(mes)}-01`,
+    fim: `${ano}-${dois(mes)}-${dois(ultimo)}`,
+  }
+}

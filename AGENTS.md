@@ -22,6 +22,31 @@ npm run lint
 > `npx tsc --noEmit` sozinho falha: o Next 16 gera `LayoutProps`/`PageProps` em
 > `.next/types`. Use `npm run typecheck`, que roda o `next typegen` antes.
 
+## Virada de mês
+
+Cada mês tem sua própria rota de formulário (`app/outubro/page.tsx`), e cada
+uma mostra só as datas do próprio mês. Os meses se sobrepõem de propósito:
+quando outubro abre, as últimas sextas de setembro ainda estão recebendo
+resposta, e quem não respondeu continua entrando em `/setembro`.
+
+Para abrir o mês seguinte, três passos:
+
+```bash
+node scripts/criar-eventos-do-mes.mjs 2026-11            # confere
+node scripts/criar-eventos-do-mes.mjs 2026-11 --aplicar  # grava
+```
+
+1. Rodar o script acima. Ele cria sexta = Fire e sábado = Culto, com o
+   segundo sábado como Culto de Santa Ceia. O que fugir do padrão
+   (conferência, Atmosfera, Kids) entra à mão depois.
+2. Copiar `app/outubro/page.tsx` para `app/novembro/page.tsx` e trocar o
+   `MES`.
+3. Trocar `MES_OFICIAL` em `lib/datas.ts`. É de lá que saem a raiz do site,
+   o link do rodapé do login e o endereço que a cobrança do WhatsApp cola.
+
+O mês anterior não é fechado nesse momento. Quem fecha uma data é sempre o
+botão do painel, em `aberto_para_resposta` (D11).
+
 ## Invariantes do projeto
 
 Estas regras vêm do PRD e não devem ser quebradas sem mudar o PRD antes.

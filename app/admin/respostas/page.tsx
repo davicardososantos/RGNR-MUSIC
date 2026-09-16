@@ -1,5 +1,6 @@
 import { LinhaMusico } from '@/components/admin/linha-resposta'
 import { carregarRespostas } from '@/lib/dados-admin'
+import { MES_OFICIAL } from '@/lib/datas'
 
 export const metadata = { title: 'Respostas — Gestão' }
 
@@ -9,7 +10,7 @@ export default async function RespostasPage() {
   const faltam = linhas.filter((l) => !l.respondeu)
   const responderam = linhas.filter((l) => l.respondeu)
 
-  const urlFormulario = `${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/setembro`
+  const urlFormulario = `${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/${MES_OFICIAL.slug}`
 
   return (
     <div className="space-y-8">
