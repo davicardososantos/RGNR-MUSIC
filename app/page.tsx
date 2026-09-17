@@ -1,6 +1,11 @@
-import { redirect } from 'next/navigation'
-import { MES_OFICIAL } from '@/lib/datas'
+import { PaginaFormulario } from '@/components/formulario/pagina-formulario'
+
+export { metadata } from '@/components/formulario/pagina-formulario'
+
+// A lista de músicos e os eventos mudam pouco, mas uma resposta gravada
+// precisa aparecer na volta — nada de cache estático aqui.
+export const dynamic = 'force-dynamic'
 
 export default function Home() {
-  redirect(`/${MES_OFICIAL.slug}`)
+  return <PaginaFormulario />
 }

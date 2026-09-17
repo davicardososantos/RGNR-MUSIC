@@ -22,11 +22,13 @@ export type ResumoEvento = {
 export type LinhaResposta = {
   id: string
   nome: string
+  slug: string
   whatsapp: string | null
   status: StatusMusico
   presenca: NivelPresenca | null
   respostas: Record<string, RespostaDisponibilidade>
-  respondeu: boolean
+  /** Datas abertas ainda em branco. Zero = está em dia. */
+  faltam: number
   /** Alguém respondeu por este músico de um aparelho que não era o dele (PRD §5). */
   outroAparelho: boolean
   /** "Só na escala" e presença baixa pedem confirmação dupla (regras §3.3). */
@@ -38,8 +40,11 @@ export type PainelDoMes = {
   proximos: ResumoEvento[]
   /** Já aconteceu, do mais recente ao mais antigo. */
   historico: ResumoEvento[]
+  /** Abertas para resposta, de hoje em diante. É o que o formulário mostra. */
+  abertos: Evento[]
   totalMusicos: number
-  responderamAlgo: number
+  /** Respondeu todas as datas abertas. */
+  emDia: number
 }
 
 /**
@@ -104,9 +109,26 @@ async function carregarEventos() {
 
   const hoje = hojeISO()
 
+  // "Em dia" é quem respondeu TODAS as datas abertas, não quem respondeu
+  // alguma. Com três meses no ar ao mesmo tempo, contar "respondeu alguma
+  // coisa" dava 90% de resposta enquanto novembro inteiro estava em branco.
+  const abertos = ((eventos ?? []) as Evento[]).filter(
+    (e) => e.aberto_para_resposta && e.data >= hoje,
+  )
+  const idsAbertos = new Set(abertos.map((e) => e.id))
+
+  const respondidasPorMusico = new Map<string, number>()
+  for (const l of linhas) {
+    if (!idsAbertos.has(l.evento_id as string)) continue
+    const id = l.musico_id as string
+    respondidasPorMusico.set(id, (respondidasPorMusico.get(id) ?? 0) + 1)
+  }
+
   return {
     totalMusicos: totalMusicos ?? 0,
-    responderamAlgo: new Set(linhas.map((l) => l.musico_id)).size,
+    abertos,
+    emDia: [...respondidasPorMusico.values()].filter((n) => n >= abertos.length)
+      .length,
     proximos: resumos.filter((r) => r.evento.data >= hoje),
     historico: resumos.filter((r) => r.evento.data < hoje).reverse(),
   }
@@ -119,32 +141,38 @@ export async function carregarPainelDoMes(): Promise<PainelDoMes> {
 export type InicioAdmin = {
   proximo: ResumoEvento | null
   totalMusicos: number
-  responderamAlgo: number
+  emDia: number
   faltamResponder: number
+  datasAbertas: number
   qtdProximos: number
   qtdHistorico: number
 }
 
 /** O resumo da tela inicial: o que vem agora e o que está pendente. */
 export async function carregarInicioAdmin(): Promise<InicioAdmin> {
-  const { proximos, historico, totalMusicos, responderamAlgo } =
+  const { proximos, historico, totalMusicos, emDia, abertos } =
     await carregarEventos()
 
   return {
     proximo: proximos[0] ?? null,
     totalMusicos,
-    responderamAlgo,
-    faltamResponder: Math.max(totalMusicos - responderamAlgo, 0),
+    emDia,
+    faltamResponder: Math.max(totalMusicos - emDia, 0),
+    datasAbertas: abertos.length,
     qtdProximos: proximos.length,
     qtdHistorico: historico.length,
   }
 }
 
 /**
- * Quem respondeu e quem falta.
+ * Quem respondeu e quem falta, nas datas que estão abertas agora.
  *
- * A ordem é a ordem do trabalho: primeiro quem falta, e dentro disso os
- * ativos antes — são deles que a escala depende. Quem já respondeu desce.
+ * Só as datas abertas entram: cobrar alguém por uma data de setembro que já
+ * foi fechada não leva a lugar nenhum, e a lista de selos por músico ficaria
+ * com 27 quadradinhos no celular.
+ *
+ * A ordem é a ordem do trabalho: primeiro quem falta mais, e dentro disso os
+ * ativos antes — são deles que a escala depende. Quem está em dia desce.
  */
 export async function carregarRespostas(): Promise<{
   eventos: Evento[]
@@ -156,7 +184,7 @@ export async function carregarRespostas(): Promise<{
     await Promise.all([
       db
         .from('musicos')
-        .select('id, nome, whatsapp, status, presenca')
+        .select('id, nome, slug, whatsapp, status, presenca')
         .eq('no_formulario', true)
         .order('nome'),
       db.from('eventos').select('*').order('data'),
@@ -166,8 +194,16 @@ export async function carregarRespostas(): Promise<{
 
   const deOutroAparelho = new Set((logs ?? []).map((l) => l.musico_id as string))
 
+  const hoje = hojeISO()
+  const abertos = ((eventos ?? []) as Evento[]).filter(
+    (e) => e.aberto_para_resposta && e.data >= hoje,
+  )
+  const idsAbertos = new Set(abertos.map((e) => e.id))
+
   const linhas: LinhaResposta[] = (musicos ?? []).map((m) => {
-    const minhas = (disponibilidades ?? []).filter((d) => d.musico_id === m.id)
+    const minhas = (disponibilidades ?? []).filter(
+      (d) => d.musico_id === m.id && idsAbertos.has(d.evento_id as string),
+    )
     const respostas: Record<string, RespostaDisponibilidade> = {}
     for (const d of minhas) {
       respostas[d.evento_id as string] = d.resposta as RespostaDisponibilidade
@@ -179,21 +215,24 @@ export async function carregarRespostas(): Promise<{
     return {
       id: m.id as string,
       nome: m.nome as string,
+      slug: m.slug as string,
       whatsapp: m.whatsapp as string | null,
       status,
       presenca,
       respostas,
-      respondeu: minhas.length > 0,
+      faltam: abertos.length - minhas.length,
       outroAparelho: deOutroAparelho.has(m.id as string),
       precisaConfirmacaoDupla:
         status === 'presenca_baixa' || presenca === 'so_na_escala',
     }
   })
 
-  const peso = (l: LinhaResposta) =>
-    (l.respondeu ? 10 : 0) + (l.status === 'ativo' ? 0 : 1)
+  linhas.sort(
+    (a, b) =>
+      b.faltam - a.faltam ||
+      Number(a.status !== 'ativo') - Number(b.status !== 'ativo') ||
+      a.nome.localeCompare(b.nome, 'pt-BR'),
+  )
 
-  linhas.sort((a, b) => peso(a) - peso(b) || a.nome.localeCompare(b.nome, 'pt-BR'))
-
-  return { eventos: (eventos ?? []) as Evento[], linhas }
+  return { eventos: abertos, linhas }
 }

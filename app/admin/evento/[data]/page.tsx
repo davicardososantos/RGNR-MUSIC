@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Icone } from '@/components/icone'
 import { Montador } from '@/components/escala/montador'
+import { Disponiveis } from '@/components/escala/disponiveis'
 import { carregarEscala } from '@/lib/dados-escala'
 import { dataPorExtenso, hora } from '@/lib/datas'
 import { EVENTO_LABEL, nomeDoEvento } from '@/lib/tipos'
@@ -22,7 +23,7 @@ export default async function EventoPage({
 
   if (!escala) notFound()
 
-  const { evento, funcoes, musicos, escalacoes } = escala
+  const { evento, funcoes, musicos, escalacoes, instrumentos } = escala
   const fire = evento.tipo === 'fire'
   const rotulo = EVENTO_LABEL[evento.tipo]
 
@@ -75,6 +76,14 @@ export default async function EventoPage({
           como obrigatórios, mas dá para montar banda completa.
         </p>
       )}
+
+      <Disponiveis
+        evento={evento}
+        musicos={musicos}
+        funcoes={funcoes}
+        escalacoes={escalacoes}
+        instrumentos={instrumentos}
+      />
 
       <Montador
         evento={evento}

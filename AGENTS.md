@@ -24,25 +24,21 @@ npm run lint
 
 ## Virada de mês
 
-Cada mês tem sua própria rota de formulário (`app/outubro/page.tsx`), e cada
-uma mostra só as datas do próprio mês. Os meses se sobrepõem de propósito:
-quando outubro abre, as últimas sextas de setembro ainda estão recebendo
-resposta, e quem não respondeu continua entrando em `/setembro`.
-
-Para abrir o mês seguinte, três passos:
+Um passo só:
 
 ```bash
-node scripts/criar-eventos-do-mes.mjs 2026-11            # confere
-node scripts/criar-eventos-do-mes.mjs 2026-11 --aplicar  # grava
+node scripts/criar-eventos-do-mes.mjs 2026-12            # confere
+node scripts/criar-eventos-do-mes.mjs 2026-12 --aplicar  # grava
 ```
 
-1. Rodar o script acima. Ele cria sexta = Fire e sábado = Culto, com o
-   segundo sábado como Culto de Santa Ceia. O que fugir do padrão
-   (conferência, Atmosfera, Kids) entra à mão depois.
-2. Copiar `app/outubro/page.tsx` para `app/novembro/page.tsx` e trocar o
-   `MES`.
-3. Trocar `MES_OFICIAL` em `lib/datas.ts`. É de lá que saem a raiz do site,
-   o link do rodapé do login e o endereço que a cobrança do WhatsApp cola.
+O script cria sexta = Fire e sábado = Culto, com o segundo sábado como Culto
+de Santa Ceia. Criar os eventos já põe o mês no ar: o formulário é uma página
+só, na raiz, e mostra todas as datas abertas de hoje em diante. O que fugir do
+padrão (conferência, Atmosfera, Kids) entra à mão depois.
+
+**Não crie rota nova por mês.** `/setembro`, `/outubro` e `/novembro` são
+redirecionamentos para a raiz e só existem porque esses links já foram colados
+no WhatsApp.
 
 O mês anterior não é fechado nesse momento. Quem fecha uma data é sempre o
 botão do painel, em `aberto_para_resposta` (D11).
@@ -72,6 +68,13 @@ Estas regras vêm do PRD e não devem ser quebradas sem mudar o PRD antes.
    o laboratório de estreia.
 8. **Nada de emoji na interface.** Todo ícone vem do Font Awesome, através de
    `components/icone.tsx`. Ver abaixo.
+9. **O formulário é uma página só** (17/09/2026). A raiz mostra todas as datas
+   abertas de hoje em diante, agrupadas por mês. Antes havia uma rota por mês,
+   e quem quisesse responder outubro e novembro tinha de achar o próprio nome
+   e conferir os instrumentos duas vezes — era o maior atrito para responder.
+10. **Ajuste de resposta pelo gestor exige motivo**, e é a única coisa
+    obrigatória do painel. Não contradiz a D12: ali o gestor fala no lugar de
+    outra pessoa. Ver PRD §5.1.
 
 ## Ícones
 

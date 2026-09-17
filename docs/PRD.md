@@ -112,6 +112,14 @@ Isso inverte a hierarquia dos dados na tela de escala:
 - ❌ Exigir justificativa para escalar quem o sistema não recomendaria
 - ❌ Limitar quais datas cada músico pode marcar
 
+**A única exceção (17/09/2026):** quando o gestor altera pelo painel a
+resposta de um músico — o caso de quem marcou "sim" e depois avisou pelo
+WhatsApp que não vai dar —, o motivo é obrigatório. Não é o mesmo tipo de
+trava: ali o gestor está falando no lugar de outra pessoa, e sem o registro
+ninguém sabe, semanas depois, por que a resposta dela mudou sem ela ter
+entrado no link. A trava que a D12 proíbe é sobre as decisões do próprio
+gestor; esta é sobre a palavra de terceiro.
+
 ### O que continua valendo
 
 - ✅ Mostrar nível, presença e status **ao lado de cada nome** — informação não é trava

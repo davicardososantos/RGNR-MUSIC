@@ -2,37 +2,32 @@ import Image from 'next/image'
 import { Icone } from '@/components/icone'
 import { Formulario } from '@/components/formulario/formulario'
 import { musicosDesteNavegador } from '@/lib/chave-edicao'
-import { nomeDoMes } from '@/lib/datas'
+import { chaveDoMes, hojeISO, listaPorExtenso, nomeDaChave } from '@/lib/datas'
 import {
-  listarEventosAbertosDoMes,
+  listarEventosAbertos,
   listarInstrumentos,
   listarMusicosDoFormulario,
-  musicosComRespostaNoMes,
+  respostasDesteNavegador,
 } from '@/lib/dados'
 
-/** O título da aba e a descrição, a partir do mês da rota. */
-export function metadataDoMes(mes: number) {
-  const nome = nomeDoMes(mes)
-
-  return {
-    title: `Disponibilidade de ${nome} — Banda RGNR`,
-    description: `Marque em quais datas de ${nome} você pode tocar.`,
-  }
+export const metadata = {
+  title: 'Sua disponibilidade — Banda RGNR',
+  description: 'Marque em quais datas você pode tocar.',
 }
 
 /**
- * A tela de formulário de um mês.
+ * A tela do formulário.
  *
- * Setembro e outubro são a mesma tela com outro recorte de datas, e novembro
- * vai ser também. A rota de cada mês só informa o par ano/mês e mora em
- * `app/<mes>/page.tsx`, para o endereço continuar legível no WhatsApp.
+ * Mostra todas as datas abertas de uma vez, separadas por mês. Antes havia
+ * uma página por mês e o músico que quisesse responder outubro e novembro
+ * tinha de achar o próprio nome e conferir os instrumentos duas vezes. As
+ * rotas antigas (`/outubro`) continuam existindo e trazem para cá, porque
+ * esses links já foram colados no WhatsApp.
  */
-export async function PaginaDoMes({ ano, mes }: { ano: number; mes: number }) {
-  const nome = nomeDoMes(mes)
-
+export async function PaginaFormulario() {
   const [musicos, eventos, instrumentos, desteNavegador] = await Promise.all([
     listarMusicosDoFormulario(),
-    listarEventosAbertosDoMes(ano, mes),
+    listarEventosAbertos(),
     listarInstrumentos(),
     musicosDesteNavegador(),
   ])
@@ -44,7 +39,7 @@ export async function PaginaDoMes({ ano, mes }: { ano: number; mes: number }) {
           <Icone nome="encerrado" className="text-muted-foreground mx-auto h-9 w-9" />
           <h1 className="text-xl font-semibold">Respostas encerradas</h1>
           <p className="text-muted-foreground text-sm">
-            A escala de {nome} já foi fechada. Qualquer coisa, fala com o Davi ou o
+            Não há nenhuma data aberta agora. Qualquer coisa, fala com o Davi ou o
             André.
           </p>
         </div>
@@ -53,12 +48,22 @@ export async function PaginaDoMes({ ano, mes }: { ano: number; mes: number }) {
   }
 
   // Depois do retorno acima: sem data aberta não há o que conferir.
-  const jaRespondidos = await musicosComRespostaNoMes(
+  const jaRespondidas = await respostasDesteNavegador(
     desteNavegador,
     eventos.map((e) => e.id),
   )
 
-  const prazo = eventos.find((e) => e.prazo_resposta)?.prazo_resposta ?? null
+  const meses = listaPorExtenso([
+    ...new Set(eventos.map((e) => nomeDaChave(chaveDoMes(e.data)))),
+  ])
+
+  // Prazo vencido não é prazo. As datas de setembro carregam um prazo de
+  // 09/09 que já passou, e sem o corte a tela diria "até 9 de setembro" para
+  // quem está respondendo novembro.
+  const hoje = hojeISO()
+  const prazo =
+    eventos.find((e) => e.prazo_resposta && e.prazo_resposta >= hoje)
+      ?.prazo_resposta ?? null
 
   return (
     <main className="mx-auto w-full max-w-lg flex-1 px-4 py-8 sm:py-12">
@@ -73,10 +78,12 @@ export async function PaginaDoMes({ ano, mes }: { ano: number; mes: number }) {
         />
         <div className="space-y-2">
           <h1 className="text-2xl font-semibold tracking-tight">
-            Disponibilidade de {nome}
+            Disponibilidade de {meses}
           </h1>
           <p className="text-muted-foreground text-sm leading-relaxed">
-            Leva menos de dois minutos.
+            {eventos.length === 1
+              ? 'É uma data só.'
+              : `São ${eventos.length} datas. Marque todas de uma vez e você não precisa voltar mês que vem.`}
           </p>
         </div>
       </header>
@@ -86,7 +93,8 @@ export async function PaginaDoMes({ ano, mes }: { ano: number; mes: number }) {
         eventos={eventos}
         instrumentos={instrumentos}
         prazo={prazo}
-        jaRespondidos={jaRespondidos}
+        totalAberto={eventos.length}
+        jaRespondidas={jaRespondidas}
       />
 
       <footer className="text-muted-foreground mt-10 text-center text-xs">

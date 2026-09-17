@@ -32,6 +32,12 @@ export default async function AdminLayout({ children }: LayoutProps<'/admin'>) {
             >
               Respostas
             </Link>
+            <Link
+              href="/admin/musicos"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Pessoas
+            </Link>
           </nav>
           <form action={sair}>
             <button

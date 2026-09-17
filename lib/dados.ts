@@ -1,6 +1,6 @@
 import 'server-only'
 import { servico } from '@/lib/supabase/service'
-import { limitesDoMes } from '@/lib/datas'
+import { hojeISO } from '@/lib/datas'
 import type { Evento, Instrumento, Musico } from '@/lib/tipos'
 
 export type MusicoDaLista = Pick<Musico, 'id' | 'nome' | 'slug'>
@@ -31,24 +31,23 @@ export async function listarMusicosDoFormulario(): Promise<MusicoDaLista[]> {
 }
 
 /**
- * Eventos abertos para resposta dentro de um mês, na ordem do calendário.
+ * Todas as datas abertas para resposta, de hoje em diante.
  *
- * O recorte por mês existe porque os meses se sobrepõem: quando outubro
- * abre, as últimas datas de setembro ainda estão recebendo resposta. Cada
- * formulário mostra só o que é dele.
+ * O formulário deixou de ser por mês em 17/09/2026. Os meses se sobrepõem
+ * o tempo todo (quando outubro abriu, as últimas sextas de setembro ainda
+ * recebiam resposta) e uma página por mês obrigava o músico a escolher o
+ * nome e conferir os instrumentos de novo a cada mês. Agora é uma lista só,
+ * separada por mês na tela.
+ *
+ * O corte em hoje é o que impede uma data vencida e esquecida aberta de
+ * voltar à lista meses depois.
  */
-export async function listarEventosAbertosDoMes(
-  ano: number,
-  mes: number,
-): Promise<Evento[]> {
-  const { inicio, fim } = limitesDoMes(ano, mes)
-
+export async function listarEventosAbertos(): Promise<Evento[]> {
   const { data, error } = await servico()
     .from('eventos')
     .select('*')
     .eq('aberto_para_resposta', true)
-    .gte('data', inicio)
-    .lte('data', fim)
+    .gte('data', hojeISO())
     .order('data')
 
   if (error) throw new Error(`Falha ao listar eventos: ${error.message}`)
@@ -56,22 +55,23 @@ export async function listarEventosAbertosDoMes(
 }
 
 /**
- * Dos músicos deste navegador, quais já responderam alguma data do mês.
+ * Quantas datas abertas cada músico deste navegador já respondeu.
  *
  * A chave de edição é do aparelho e não tem mês: quem respondeu setembro
- * neste celular continua com a chave quando outubro abre. Se o selo "já
- * respondeu" saísse só da chave, outubro nasceria marcado em cima de quem
- * ainda não respondeu nada.
+ * neste celular continua com a chave quando outubro abre. Contar em vez de
+ * só marcar "já respondeu" existe porque a lista passou a ter três meses ao
+ * mesmo tempo: quem respondeu setembro inteiro e não tocou em novembro
+ * apareceria como pronto e nunca mais voltaria.
  *
  * Continua restrito aos músicos deste navegador. Perguntar pela lista toda
  * diria quem já respondeu e quem não, e isso não é da conta de quem abre o
  * formulário (D7).
  */
-export async function musicosComRespostaNoMes(
+export async function respostasDesteNavegador(
   musicoIds: string[],
   eventoIds: string[],
-): Promise<string[]> {
-  if (musicoIds.length === 0 || eventoIds.length === 0) return []
+): Promise<Record<string, number>> {
+  if (musicoIds.length === 0 || eventoIds.length === 0) return {}
 
   const { data, error } = await servico()
     .from('disponibilidades')
@@ -80,7 +80,13 @@ export async function musicosComRespostaNoMes(
     .in('evento_id', eventoIds)
 
   if (error) throw new Error(`Falha ao conferir respostas: ${error.message}`)
-  return [...new Set((data ?? []).map((l) => l.musico_id as string))]
+
+  const contagem: Record<string, number> = {}
+  for (const l of data ?? []) {
+    const id = l.musico_id as string
+    contagem[id] = (contagem[id] ?? 0) + 1
+  }
+  return contagem
 }
 
 export async function listarInstrumentos(): Promise<Instrumento[]> {

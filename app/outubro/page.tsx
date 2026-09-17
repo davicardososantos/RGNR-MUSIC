@@ -1,14 +1,8 @@
-import { PaginaDoMes, metadataDoMes } from '@/components/formulario/pagina-do-mes'
+import { redirect } from 'next/navigation'
 
-const ANO = 2026
-const MES = 10
-
-export const metadata = metadataDoMes(MES)
-
-// A lista de músicos e os eventos mudam pouco, mas uma resposta gravada
-// precisa aparecer na volta — nada de cache estático aqui.
-export const dynamic = 'force-dynamic'
-
+// O formulário deixou de ser por mês em 17/09/2026: a raiz mostra todas as
+// datas abertas de uma vez. Esta rota fica porque o link já foi colado no
+// WhatsApp e não pode virar 404.
 export default function OutubroPage() {
-  return <PaginaDoMes ano={ANO} mes={MES} />
+  redirect('/')
 }

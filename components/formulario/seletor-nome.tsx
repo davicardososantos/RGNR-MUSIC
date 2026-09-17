@@ -14,12 +14,15 @@ function normalizar(texto: string) {
 
 export function SeletorNome({
   musicos,
-  jaRespondidos,
+  jaRespondidas,
+  totalAberto,
   onEscolher,
   carregando,
 }: {
   musicos: MusicoDaLista[]
-  jaRespondidos: string[]
+  /** Quantas datas abertas cada músico deste aparelho já respondeu. */
+  jaRespondidas: Record<string, number>
+  totalAberto: number
   onEscolher: (slug: string) => void
   carregando: string | null
 }) {
@@ -52,7 +55,11 @@ export function SeletorNome({
 
       <div className="grid gap-2">
         {filtrados.map((m) => {
-          const respondido = jaRespondidos.includes(m.id)
+          // Com três meses abertos, "já respondeu" escondia quem tinha
+          // respondido setembro e nem aberto novembro. O que falta é o
+          // que importa aqui.
+          const feitas = jaRespondidas[m.id] ?? 0
+          const faltam = totalAberto - feitas
           return (
             <button
               key={m.id}
@@ -64,9 +71,13 @@ export function SeletorNome({
               <span>{m.nome}</span>
               {carregando === m.slug ? (
                 <span className="text-muted-foreground text-xs">abrindo…</span>
-              ) : respondido ? (
-                <span className="text-muted-foreground text-xs">já respondeu ✓</span>
-              ) : null}
+              ) : feitas === 0 ? null : faltam === 0 ? (
+                <span className="text-lima text-xs">tudo respondido</span>
+              ) : (
+                <span className="text-muted-foreground text-xs">
+                  faltam {faltam}
+                </span>
+              )}
             </button>
           )
         })}

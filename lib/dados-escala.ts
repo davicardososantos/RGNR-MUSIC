@@ -5,13 +5,15 @@ import type {
   FuncaoDaEscala,
   MusicoParaEscala,
 } from '@/lib/candidatos'
-import type { Evento, OrdemEscala } from '@/lib/tipos'
+import type { Evento, Instrumento, OrdemEscala } from '@/lib/tipos'
 
 export type DadosDaEscala = {
   evento: Evento
   funcoes: FuncaoDaEscala[]
   musicos: MusicoParaEscala[]
   escalacoes: EscalacaoAtual[]
+  /** O catálogo, para agrupar os disponíveis por instrumento na tela. */
+  instrumentos: Instrumento[]
 }
 
 /**
@@ -44,19 +46,21 @@ export async function carregarEscala(
     { data: overrides },
     { data: disponibilidades },
     { data: escalacoes },
+    { data: instrumentos },
   ] = await Promise.all([
     db.from('formacao').select('*').eq('tipo', evento.tipo).order('ordem'),
     db.from('funcoes').select('*'),
     db.from('funcao_instrumentos').select('*'),
     db
       .from('musicos')
-      .select('id, nome, whatsapp, status, presenca, eh_lider')
+      .select('id, nome, slug, whatsapp, status, presenca, eh_lider')
       .eq('no_formulario', true)
       .order('nome'),
     db.from('musico_instrumento').select('*').eq('ativo', true),
     db.from('musico_funcao_ordem').select('*'),
     db.from('disponibilidades').select('*').eq('evento_id', evento.id),
     db.from('escalacoes').select('id, funcao_id, musico_id, tipo').eq('evento_id', evento.id),
+    db.from('instrumentos').select('*').order('ordem_criticidade'),
   ])
 
   const funcoes: FuncaoDaEscala[] = (formacao ?? []).map((f) => {
@@ -83,6 +87,7 @@ export async function carregarEscala(
     return {
       id: m.id as string,
       nome: m.nome as string,
+      slug: m.slug as string,
       whatsapp: m.whatsapp as string | null,
       status: m.status,
       presenca: m.presenca,
@@ -107,6 +112,7 @@ export async function carregarEscala(
     funcoes,
     musicos,
     escalacoes: (escalacoes ?? []) as EscalacaoAtual[],
+    instrumentos: (instrumentos ?? []) as Instrumento[],
   }
 }
 

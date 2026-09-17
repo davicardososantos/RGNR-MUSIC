@@ -88,18 +88,8 @@ export function hora(valor: string | null) {
 }
 
 // ------------------------------------------------------------
-// O mês do formulário
+// Os meses do formulário
 // ------------------------------------------------------------
-
-/**
- * O mês que o formulário oficial cobre.
- *
- * É para cá que a raiz do site manda e é este o link que a liderança cola
- * na cobrança do WhatsApp. Na virada do mês, muda só esta constante e cria
- * a rota nova em `app/`: o mês anterior continua no ar, no endereço dele,
- * porque as últimas datas dele ainda estão recebendo resposta.
- */
-export const MES_OFICIAL = { slug: 'outubro', mes: 10 } as const
 
 /** 10 vira 'outubro'. Mês de 1 a 12, como as pessoas contam. */
 export function nomeDoMes(mes: number) {
@@ -107,19 +97,23 @@ export function nomeDoMes(mes: number) {
 }
 
 /**
- * Primeiro e último dia do mês, em 'AAAA-MM-DD'.
+ * '2026-10-10' vira '2026-10'.
  *
- * Serve para recortar os eventos de um mês só. Sem o recorte, o formulário
- * de outubro herdaria as sextas de setembro que continuam abertas, e o
- * músico veria 14 cartões embaixo do título de outubro.
+ * O formulário mostra todas as datas abertas de uma vez e usa isto para
+ * separá-las por mês na tela. O ano entra na chave porque dezembro e o
+ * janeiro seguinte vão se encontrar aqui.
  */
-export function limitesDoMes(ano: number, mes: number) {
-  const dois = (n: number) => String(n).padStart(2, '0')
-  // Dia 0 do mês seguinte é o último dia deste.
-  const ultimo = new Date(ano, mes, 0).getDate()
+export function chaveDoMes(iso: string) {
+  return iso.slice(0, 7)
+}
 
-  return {
-    inicio: `${ano}-${dois(mes)}-01`,
-    fim: `${ano}-${dois(mes)}-${dois(ultimo)}`,
-  }
+/** '2026-10' vira 'outubro'. */
+export function nomeDaChave(chave: string) {
+  return nomeDoMes(Number(chave.slice(5, 7)))
+}
+
+/** ['setembro','outubro','novembro'] vira 'setembro, outubro e novembro'. */
+export function listaPorExtenso(itens: string[]) {
+  if (itens.length <= 1) return itens[0] ?? ''
+  return `${itens.slice(0, -1).join(', ')} e ${itens[itens.length - 1]}`
 }

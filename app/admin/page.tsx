@@ -47,12 +47,10 @@ function Opcao({
 
 export default async function AdminPage() {
   const [gestor, inicio] = await Promise.all([gestorAtual(), carregarInicioAdmin()])
-  const { proximo, totalMusicos, responderamAlgo, faltamResponder } = inicio
+  const { proximo, totalMusicos, emDia, faltamResponder, datasAbertas } = inicio
 
   const primeiroNome = gestor?.nome?.split(' ')[0] ?? null
-  const percentual = totalMusicos
-    ? Math.round((responderamAlgo / totalMusicos) * 100)
-    : 0
+  const percentual = totalMusicos ? Math.round((emDia / totalMusicos) * 100) : 0
 
   return (
     <div className="space-y-7">
@@ -61,7 +59,8 @@ export default async function AdminPage() {
           {primeiroNome ? `Olá, ${primeiroNome}` : 'Painel'}
         </h1>
         <p className="text-muted-foreground text-sm">
-          {responderamAlgo} de {totalMusicos} já responderam ({percentual}%)
+          {emDia} de {totalMusicos} responderam as {datasAbertas} datas abertas (
+          {percentual}%)
         </p>
       </div>
 
@@ -158,6 +157,21 @@ export default async function AdminPage() {
           titulo="Respostas"
           descricao="Quem pode, quem não pode e quem falta"
           selo={faltamResponder ? `${faltamResponder} faltam` : undefined}
+        />
+        <Opcao
+          href="/admin/musicos"
+          icone="pessoas"
+          cor="text-lima"
+          titulo="Pessoas"
+          descricao="A ficha de cada um: escalas, respostas e histórico"
+          selo={totalMusicos ? `${totalMusicos}` : undefined}
+        />
+        <Opcao
+          href="/admin/relatorios"
+          icone="relatorios"
+          cor="text-roxo-claro"
+          titulo="Relatórios"
+          descricao="Quem mais toca, quem mais se dispõe e quem sumiu"
         />
         <Opcao
           href="/admin/historico"

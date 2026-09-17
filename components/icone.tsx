@@ -15,6 +15,8 @@ import {
   faUserTie,
   faWandMagicSparkles,
   faCheck,
+  faChartSimple,
+  faChevronDown,
   faChurch,
   faCircleCheck,
   faCircleExclamation,
@@ -22,6 +24,7 @@ import {
   faHandshakeAngle,
   faLock,
   faMusic,
+  faPenToSquare,
   faPlus,
   faXmark,
 } from '@fortawesome/free-solid-svg-icons'
@@ -56,13 +59,16 @@ export const ICONES = {
   respostas: faComments,
   historico: faClockRotateLeft,
   pessoas: faUserGroup,
+  relatorios: faChartSimple,
   avancar: faChevronRight,
+  expandir: faChevronDown,
 
   // Estados e ações
   concluido: faCircleCheck,
   encerrado: faLock,
   atencao: faCircleExclamation,
   trocar: faArrowRightArrowLeft,
+  editar: faPenToSquare,
 
   // Status do músico (criterios-de-nivel.md) — substituem ✅🕐💤🎓🧪⛔📤👔
   statusAtivo: faCircleCheck,

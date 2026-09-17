@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { SeletorNome } from './seletor-nome'
@@ -8,7 +8,7 @@ import { PassoDados, type DadosDoMusico } from './passo-dados'
 import { CartaoData, type RespostaLocal } from './cartao-data'
 import { Icone, type NomeIcone } from '@/components/icone'
 import { abrirFormulario, salvarDados, salvarResposta } from '@/actions/disponibilidade'
-import { dataCurta, diaEMes } from '@/lib/datas'
+import { chaveDoMes, dataCurta, diaEMes, nomeDaChave } from '@/lib/datas'
 import {
   RESPOSTA_LABEL,
   type Evento,
@@ -27,18 +27,39 @@ const ICONE_DA_RESPOSTA: Record<RespostaDisponibilidade, NomeIcone> = {
   nao: 'nao',
 }
 
+/**
+ * As datas abertas, separadas por mês na ordem do calendário.
+ *
+ * Com três meses abertos ao mesmo tempo, uma lista corrida de 22 cartões não
+ * dava noção de progresso: a pessoa rolava sem saber onde outubro acabava.
+ */
+function agruparPorMes(eventos: Evento[]) {
+  const mapa = new Map<string, Evento[]>()
+  for (const e of eventos) {
+    const chave = chaveDoMes(e.data)
+    mapa.set(chave, [...(mapa.get(chave) ?? []), e])
+  }
+  return [...mapa.entries()].map(([chave, doMes]) => ({
+    chave,
+    nome: nomeDaChave(chave),
+    eventos: doMes,
+  }))
+}
+
 export function Formulario({
   musicos,
   eventos,
   instrumentos,
   prazo,
-  jaRespondidos,
+  totalAberto,
+  jaRespondidas,
 }: {
   musicos: MusicoDaLista[]
   eventos: Evento[]
   instrumentos: Instrumento[]
   prazo: string | null
-  jaRespondidos: string[]
+  totalAberto: number
+  jaRespondidas: Record<string, number>
 }) {
   const [etapa, setEtapa] = useState<Etapa>('nome')
   const [slug, setSlug] = useState<string | null>(null)
@@ -54,6 +75,13 @@ export function Formulario({
 
   const [respostas, setRespostas] = useState<Record<string, RespostaLocal>>({})
   const [salvos, setSalvos] = useState<Record<string, boolean>>({})
+
+  // Mês já respondido inteiro começa recolhido, e só o toque da pessoa muda
+  // isso depois. Recolher sozinho no meio do preenchimento faria a lista
+  // pular embaixo do dedo bem na hora de conferir o que foi marcado.
+  const [recolhidos, setRecolhidos] = useState<Set<string>>(new Set())
+
+  const meses = useMemo(() => agruparPorMes(eventos), [eventos])
 
   // Um timer por data: o músico toca em "Sim" e a gravação sai logo depois,
   // sem travar a interface nem disparar uma requisição por tecla digitada.
@@ -133,6 +161,7 @@ export function Formulario({
     setNome('')
     setRespostas({})
     setSalvos({})
+    setRecolhidos(new Set())
     setDados({ whatsapp: '', principal: null, cobertura: [] })
   }
 
@@ -178,6 +207,13 @@ export function Formulario({
         principal: dados.principal,
         cobertura: dados.cobertura,
       })
+      setRecolhidos(
+        new Set(
+          meses
+            .filter((m) => m.eventos.every((e) => respostas[e.id]?.resposta))
+            .map((m) => m.chave),
+        ),
+      )
       setEtapa('datas')
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Não consegui salvar seus dados')
@@ -194,7 +230,8 @@ export function Formulario({
     return (
       <SeletorNome
         musicos={musicos}
-        jaRespondidos={jaRespondidos}
+        jaRespondidas={jaRespondidas}
+        totalAberto={totalAberto}
         onEscolher={escolherNome}
         carregando={abrindo}
       />
@@ -265,16 +302,54 @@ export function Formulario({
           </p>
         </div>
 
-        <div className="space-y-3">
-          {eventos.map((e) => (
-            <CartaoData
-              key={e.id}
-              evento={e}
-              valor={respostas[e.id] ?? VAZIA}
-              onMudar={(v) => mudarResposta(e.id, v)}
-              salvo={Boolean(salvos[e.id])}
-            />
-          ))}
+        <div className="space-y-4">
+          {meses.map((mes) => {
+            const feitas = mes.eventos.filter((e) => respostas[e.id]?.resposta).length
+            const completo = feitas === mes.eventos.length
+            const aberto = !recolhidos.has(mes.chave)
+
+            return (
+              <section key={mes.chave} className="space-y-3">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setRecolhidos((atual) => {
+                      const proximo = new Set(atual)
+                      if (!proximo.delete(mes.chave)) proximo.add(mes.chave)
+                      return proximo
+                    })
+                  }
+                  className="border-border hover:bg-accent/40 flex w-full items-center justify-between gap-3 rounded-lg border px-3.5 py-2.5 text-left transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="font-medium capitalize">{mes.nome}</span>
+                    {completo && <Icone nome="sim" className="text-lima h-3.5 w-3.5" />}
+                  </span>
+                  <span className="text-muted-foreground flex items-center gap-2 text-xs">
+                    {feitas} de {mes.eventos.length}
+                    <Icone
+                      nome="expandir"
+                      className={`h-3 w-3 transition-transform ${aberto ? '' : '-rotate-90'}`}
+                    />
+                  </span>
+                </button>
+
+                {aberto && (
+                  <div className="space-y-3">
+                    {mes.eventos.map((e) => (
+                      <CartaoData
+                        key={e.id}
+                        evento={e}
+                        valor={respostas[e.id] ?? VAZIA}
+                        onMudar={(v) => mudarResposta(e.id, v)}
+                        salvo={Boolean(salvos[e.id])}
+                      />
+                    ))}
+                  </div>
+                )}
+              </section>
+            )
+          })}
         </div>
 
         <Button
@@ -306,22 +381,34 @@ export function Formulario({
       </div>
 
       <div className="border-border divide-border divide-y rounded-xl border">
-        {eventos.map((e) => {
-          const r = respostas[e.id]?.resposta
-          return (
-            <div key={e.id} className="flex items-center justify-between px-4 py-3 text-sm">
-              <span className="capitalize">{dataCurta(e.data)}</span>
-              {r ? (
-                <span className="flex items-center gap-2">
-                  <Icone nome={ICONE_DA_RESPOSTA[r]} className="h-3.5 w-3.5" />
-                  {RESPOSTA_LABEL[r].curto}
-                </span>
-              ) : (
-                <span className="text-muted-foreground">sem resposta</span>
-              )}
+        {meses.map((mes) => (
+          <div key={mes.chave}>
+            <p className="text-muted-foreground bg-muted/40 px-4 py-1.5 text-xs font-medium tracking-wide uppercase">
+              {mes.nome}
+            </p>
+            <div className="divide-border divide-y">
+              {mes.eventos.map((e) => {
+                const r = respostas[e.id]?.resposta
+                return (
+                  <div
+                    key={e.id}
+                    className="flex items-center justify-between px-4 py-3 text-sm"
+                  >
+                    <span className="capitalize">{dataCurta(e.data)}</span>
+                    {r ? (
+                      <span className="flex items-center gap-2">
+                        <Icone nome={ICONE_DA_RESPOSTA[r]} className="h-3.5 w-3.5" />
+                        {RESPOSTA_LABEL[r].curto}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">sem resposta</span>
+                    )}
+                  </div>
+                )
+              })}
             </div>
-          )
-        })}
+          </div>
+        ))}
       </div>
 
       <div className="grid gap-2">
