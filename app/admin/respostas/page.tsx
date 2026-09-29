@@ -7,7 +7,10 @@ export const metadata = { title: 'Respostas — Gestão' }
 export default async function RespostasPage() {
   const { eventos, linhas } = await carregarRespostas()
 
-  const faltam = linhas.filter((l) => l.faltam > 0)
+  // Quem tem aviso de não cobrar sai da lista de cobrança e ganha a sua
+  // própria: continua visível, só sem o botão do WhatsApp.
+  const faltam = linhas.filter((l) => l.faltam > 0 && !l.naoCobrar)
+  const falarDireto = linhas.filter((l) => l.faltam > 0 && l.naoCobrar)
   const emDia = linhas.filter((l) => l.faltam === 0)
 
   const periodo = listaPorExtenso([
@@ -23,6 +26,8 @@ export default async function RespostasPage() {
           {eventos.length} datas abertas, de {periodo}. {emDia.length} já
           responderam todas e {faltam.length} têm data em branco. Quem falta mais
           aparece primeiro.
+          {falarDireto.length > 0 &&
+            ` ${falarDireto.length} ${falarDireto.length === 1 ? 'fica' : 'ficam'} fora da cobrança, com contato direto.`}
         </p>
       </div>
 
@@ -33,6 +38,25 @@ export default async function RespostasPage() {
           </h2>
           <div className="space-y-2">
             {faltam.map((l) => (
+              <LinhaMusico
+                key={l.id}
+                linha={l}
+                eventos={eventos}
+                urlFormulario={urlFormulario}
+                periodo={periodo}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {falarDireto.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-muted-foreground text-sm font-medium tracking-wide uppercase">
+            Falar direto · {falarDireto.length}
+          </h2>
+          <div className="space-y-2">
+            {falarDireto.map((l) => (
               <LinhaMusico
                 key={l.id}
                 linha={l}

@@ -76,8 +76,12 @@ export function Disponiveis({
     [instrumentos, musicos],
   )
 
-  const naoPodem = musicos.filter((m) => m.resposta === 'nao')
-  const semResposta = musicos.filter((m) => m.resposta === null)
+  // Quem não respondeu mas avisou por fora que não pode (avisos_musico)
+  // entra com quem não pode, marcado, e não com quem falta responder.
+  const naoPodem = musicos.filter(
+    (m) => m.resposta === 'nao' || (m.resposta === null && m.avisoDaData),
+  )
+  const semResposta = musicos.filter((m) => m.resposta === null && !m.avisoDaData)
   const disponiveis = musicos.filter(
     (m) => m.resposta === 'sim' || m.resposta === 'se_precisar',
   )
@@ -182,7 +186,9 @@ export function Disponiveis({
                 Não podem · {naoPodem.length}
               </h3>
               <p className="text-muted-foreground text-xs leading-relaxed">
-                {naoPodem.map((m) => m.nome).join(', ')}
+                {naoPodem
+                  .map((m) => (m.resposta === null ? `${m.nome} (avisou)` : m.nome))
+                  .join(', ')}
               </p>
             </section>
           )}

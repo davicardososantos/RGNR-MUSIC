@@ -20,6 +20,7 @@ import {
   faChurch,
   faCircleCheck,
   faCircleExclamation,
+  faCircleInfo,
   faFire,
   faHandshakeAngle,
   faLock,
@@ -69,6 +70,8 @@ export const ICONES = {
   atencao: faCircleExclamation,
   trocar: faArrowRightArrowLeft,
   editar: faPenToSquare,
+  /** Recado dos gestores sobre a pessoa (avisos_musico). */
+  aviso: faCircleInfo,
 
   // Status do músico (criterios-de-nivel.md) — substituem ✅🕐💤🎓🧪⛔📤👔
   statusAtivo: faCircleCheck,

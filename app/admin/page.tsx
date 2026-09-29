@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Icone, type NomeIcone } from '@/components/icone'
 import { carregarInicioAdmin } from '@/lib/dados-admin'
-import { dataPorExtenso, hora, quandoRelativo } from '@/lib/datas'
+import { dataPorExtenso, hora, periodoDoAviso, quandoRelativo } from '@/lib/datas'
 import { gestorAtual } from '@/lib/supabase/sessao'
 import { EVENTO_LABEL, nomeDoEvento } from '@/lib/tipos'
 
@@ -123,6 +123,40 @@ export default async function AdminPage() {
         <p className="border-border text-muted-foreground rounded-xl border border-dashed px-4 py-6 text-center text-sm">
           Nenhuma data futura cadastrada.
         </p>
+      )}
+
+      {/* O recado que um gestor recebeu no WhatsApp e o outro precisa saber. */}
+      {inicio.avisos.length > 0 && (
+        <section className="space-y-2">
+          <h2 className="text-muted-foreground text-sm font-medium tracking-wide uppercase">
+            Avisos · {inicio.avisos.length}
+          </h2>
+          <div className="space-y-2">
+            {inicio.avisos.map((aviso) => {
+              const periodo = periodoDoAviso(aviso.indisponivelDe, aviso.indisponivelAte)
+              return (
+                <Link
+                  key={aviso.id}
+                  href={`/admin/musicos/${aviso.slug}`}
+                  className="border-roxo/30 bg-roxo/5 hover:bg-roxo/10 flex items-start gap-2.5 rounded-xl border px-4 py-3 text-sm transition-colors"
+                >
+                  <Icone nome="aviso" className="text-roxo-claro mt-0.5 h-4 w-4 shrink-0" />
+                  <span className="min-w-0">
+                    <span className="font-medium">{aviso.nome}</span>
+                    <span className="text-muted-foreground block">{aviso.texto}</span>
+                    {(periodo || aviso.naoCobrar) && (
+                      <span className="text-muted-foreground mt-0.5 block text-xs">
+                        {[periodo && `não pode ${periodo}`, aviso.naoCobrar && 'não cobrar, falar direto']
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </span>
+                    )}
+                  </span>
+                </Link>
+              )
+            })}
+          </div>
+        </section>
       )}
 
       {faltamResponder > 0 && (

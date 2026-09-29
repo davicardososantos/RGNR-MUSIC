@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { toast } from 'sonner'
 import { Icone, type NomeIcone } from '@/components/icone'
 import { linkWhatsApp, mensagemCobranca, primeiroNome } from '@/lib/whatsapp'
-import { chaveDoMes, nomeDaChave } from '@/lib/datas'
+import { chaveDoMes, nomeDaChave, periodoDoAviso } from '@/lib/datas'
 import { STATUS_LABEL, type Evento, type RespostaDisponibilidade } from '@/lib/tipos'
 import type { LinhaResposta } from '@/lib/dados-admin'
 
@@ -77,7 +77,13 @@ export function LinhaMusico({
           </p>
         </div>
 
-        {linha.faltam > 0 && (
+        {linha.faltam > 0 && linha.naoCobrar && (
+          <span className="text-muted-foreground shrink-0 px-2.5 py-1.5 text-xs">
+            falar direto
+          </span>
+        )}
+
+        {linha.faltam > 0 && !linha.naoCobrar && (
           <div className="flex shrink-0 gap-1.5">
             <button
               type="button"
@@ -115,18 +121,25 @@ export function LinhaMusico({
                 .filter((e) => chaveDoMes(e.data) === chave)
                 .map((e) => {
                   const r = linha.respostas[e.id]
+                  // Sem resposta, mas a pessoa avisou por fora que não pode.
+                  const avisou = !r && linha.cobertasPorAviso.includes(e.id)
                   return (
                     <span
                       key={e.id}
-                      title={`${e.data.slice(8)}/${e.data.slice(5, 7)}`}
+                      title={`${e.data.slice(8)}/${e.data.slice(5, 7)}${avisou ? ', avisou que não pode' : ''}`}
                       className={`flex items-center gap-1 rounded-md px-2 py-1 text-xs ${
-                        r ? COR_DA_RESPOSTA[r] : 'bg-muted/40 text-muted-foreground/60'
+                        r
+                          ? COR_DA_RESPOSTA[r]
+                          : avisou
+                            ? 'bg-muted text-muted-foreground'
+                            : 'bg-muted/40 text-muted-foreground/60'
                       }`}
                     >
                       {e.data.slice(8)}
                       {r && (
                         <Icone nome={ICONE_DA_RESPOSTA[r]} className="h-2.5 w-2.5" />
                       )}
+                      {avisou && <Icone nome="aviso" className="h-2.5 w-2.5" />}
                     </span>
                   )
                 })}
@@ -134,6 +147,19 @@ export function LinhaMusico({
           </div>
         ))}
       </div>
+
+      {linha.avisos.map((aviso) => {
+        const quando = periodoDoAviso(aviso.indisponivelDe, aviso.indisponivelAte)
+        return (
+          <p key={aviso.id} className="text-muted-foreground mt-2 flex items-start gap-1.5 text-xs">
+            <Icone nome="aviso" className="text-roxo-claro mt-0.5 h-3 w-3 shrink-0" />
+            <span>
+              {aviso.texto}
+              {quando && ` · não pode ${quando}`}
+            </span>
+          </p>
+        )
+      })}
 
       {linha.outroAparelho && (
         <p className="text-muted-foreground mt-2 text-xs">

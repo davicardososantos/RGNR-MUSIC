@@ -79,3 +79,67 @@ export async function ajustarDisponibilidade(
   revalidatePath(`/admin/musicos/${slug}`)
   revalidatePath(`/admin/evento/${data}`)
 }
+
+const dataISO = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
+
+const avisoSchema = z
+  .object({
+    musicoId: z.string().uuid(),
+    texto: z.string().trim().min(3).max(280),
+    indisponivelDe: dataISO.nullable(),
+    indisponivelAte: dataISO.nullable(),
+    naoCobrar: z.boolean(),
+  })
+  .refine((a) => (a.indisponivelDe === null) === (a.indisponivelAte === null), {
+    message: 'Preencha as duas datas do período, ou nenhuma',
+  })
+  .refine(
+    (a) => !a.indisponivelDe || !a.indisponivelAte || a.indisponivelDe <= a.indisponivelAte,
+    { message: 'A data de início vem depois do fim' },
+  )
+
+/**
+ * Registra o que o músico contou por fora do formulário.
+ *
+ * O aviso é recado entre os gestores e nunca grava resposta no lugar da
+ * pessoa (PRD §5.1): quem avisou que não pode no mês continua sem resposta
+ * no banco, só aparece marcado na escala e sai da conta de quem falta.
+ *
+ * O texto é o que os dois gestores vão ler. Assunto pessoal fica aqui, no
+ * banco, e nunca no código.
+ */
+export async function criarAviso(entrada: z.input<typeof avisoSchema>) {
+  const gestor = await exigirGestor()
+  const aviso = avisoSchema.parse(entrada)
+
+  const { error } = await servico().from('avisos_musico').insert({
+    musico_id: aviso.musicoId,
+    texto: aviso.texto,
+    indisponivel_de: aviso.indisponivelDe,
+    indisponivel_ate: aviso.indisponivelAte,
+    nao_cobrar: aviso.naoCobrar,
+    criado_por: gestor.email,
+  })
+
+  if (error) throw new Error(`Não consegui salvar o aviso: ${error.message}`)
+
+  // O aviso mexe no painel, em Respostas e na montagem de toda data do
+  // período: mais simples invalidar o /admin inteiro.
+  revalidatePath('/admin', 'layout')
+}
+
+/** Tira o aviso do ar. A linha fica no banco, com quem encerrou e quando. */
+export async function encerrarAviso(entrada: { id: string }) {
+  const gestor = await exigirGestor()
+  const { id } = z.object({ id: z.string().uuid() }).parse(entrada)
+
+  const { error } = await servico()
+    .from('avisos_musico')
+    .update({ encerrado_em: new Date().toISOString(), encerrado_por: gestor.email })
+    .eq('id', id)
+    .is('encerrado_em', null)
+
+  if (error) throw new Error(`Não consegui encerrar o aviso: ${error.message}`)
+
+  revalidatePath('/admin', 'layout')
+}

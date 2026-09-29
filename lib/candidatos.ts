@@ -30,6 +30,13 @@ export type MusicoParaEscala = {
   resposta: RespostaDisponibilidade | null
   passagemSom: boolean
   observacao: string | null
+  /**
+   * Texto do aviso dos gestores que cobre o dia deste evento: a pessoa
+   * avisou por fora que não pode. Não é resposta dela (PRD §5.1).
+   */
+  avisoDaData?: string | null
+  /** Aviso de não cobrar em vigor: falar direto com a pessoa. */
+  falarDireto?: boolean
 }
 
 export type FuncaoDaEscala = {
@@ -136,6 +143,16 @@ function avisosDoCandidato(
     avisos.push({ texto: 'alinhar com a outra frente', tom: 'neutro' })
   }
 
+  // Recado dos gestores (avisos_musico). Se a pessoa respondeu o formulário
+  // depois do aviso, a resposta dela continua mandando no grupo; o selo só
+  // lembra que existe o recado.
+  if (musico.avisoDaData) {
+    avisos.push({ texto: 'avisou que não pode', tom: 'atencao' })
+  }
+  if (musico.falarDireto) {
+    avisos.push({ texto: 'falar direto', tom: 'neutro' })
+  }
+
   return avisos
 }
 
@@ -179,8 +196,13 @@ export function candidatosParaFuncao(
     (PESO_NIVEL[a.nivel!] ?? 9) - (PESO_NIVEL[b.nivel!] ?? 9) ||
     a.musico.nome.localeCompare(b.musico.nome, 'pt-BR')
 
+  // Sem resposta, mas com aviso de que não pode no dia: vai para o grupo
+  // de quem não pode. Continua visível e escalável (D12).
+  const respostaEfetiva = (m: MusicoParaEscala): RespostaDisponibilidade | null =>
+    m.resposta ?? (m.avisoDaData ? 'nao' : null)
+
   const por = (r: RespostaDisponibilidade | null) =>
-    candidatos.filter((c) => c.musico.resposta === r).sort(ordenar)
+    candidatos.filter((c) => respostaEfetiva(c.musico) === r).sort(ordenar)
 
   return {
     podem: por('sim'),

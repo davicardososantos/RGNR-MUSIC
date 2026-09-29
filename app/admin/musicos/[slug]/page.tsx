@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Icone } from '@/components/icone'
+import { AvisosDaFicha } from '@/components/admin/avisos-da-ficha'
 import { DatasDaFicha } from '@/components/admin/datas-da-ficha'
 import { carregarFicha } from '@/lib/dados-musico'
 import { linkWhatsApp } from '@/lib/whatsapp'
@@ -73,6 +74,8 @@ export default async function MusicoPage({
           </a>
         )}
       </div>
+
+      <AvisosDaFicha musicoId={ficha.id} nome={ficha.nome} avisos={ficha.avisos} />
 
       <div className="grid grid-cols-4 gap-2 text-sm">
         <Numero valor={resumo.tocou} rotulo="tocou" cor="text-lima" />

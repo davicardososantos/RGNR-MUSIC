@@ -87,6 +87,7 @@ Explicitamente **fora de escopo** nesta primeira entrega — cada item aqui é u
 | D10 | **Perguntar ≠ escalar** | O formulário vai para todos; **o critério entra na hora de montar a escala**, não na hora de perguntar | Perguntar não custa nada e não deixa ninguém de fora do convite. Quem não vai ser escalado agora (Matheus Ventura 🎓, Sebastião 👔, os 🧪 em formação) aparece na tela de gestão **marcado**, não ausente |
 | D11 | **Prazo é social, não técnico** | O texto anuncia **quarta, 09/09**. O formulário **continua aceitando** resposta depois | Vai ter gente respondendo atrasado — é fato conhecido. Fechar o formulário no prazo puniria justamente quem você mais quer alcançar. Quem fecha é o gestor, quando quiser |
 | D12 | **O app informa, não restringe** | Nenhuma trava. Todo músico pode marcar todas as datas; toda pessoa pode ser escalada em qualquer função; publicar nunca exige justificativa | Ver §5.1 |
+| D13 | **Avisos do músico** *(29/09/2026)* | O gestor registra na ficha o que a pessoa contou por fora do formulário: um período em que ela não pode e/ou "não cobrar". É recado entre os dois gestores e **nunca vira resposta** do músico. Aparece no início do painel, na ficha, em Respostas e na montagem da escala. Tabela `avisos_musico` | Um avisou no WhatsApp que perde um mês inteiro por causa de trabalho novo; outro passa por um momento pessoal em que cobrar formulário não faz sentido. Antes, isso só existia na memória de quem recebeu a mensagem. **O texto mora no banco, nunca no código nem no git**: é assunto pessoal de gente da igreja |
 
 ---
 
@@ -262,6 +263,7 @@ Com 37 pessoas, **cobrar é metade do trabalho**. Esta tela existe para isso:
 - Destaque para quem é 🕐 presença baixa ou "só na escala" — a regra da casa manda **confirmação dupla** para esses
 - ⚠️ Marca em quem respondeu de outro dispositivo (§5)
 - 🆕 **Marca em quem respondeu depois da escala já estar montada.** Consequência direta da D11: se o Léo responde na quinta e você fechou a escala na quarta, o app te avisa — pode ser que valha reabrir a decisão
+- **Avisos (D13):** data sem resposta que um aviso de período cobre não conta como falta. Quem tem aviso de "não cobrar" sai da lista de cobrança e vai para **Falar direto**, sem botão de WhatsApp
 
 #### C. Montar a escala — `/admin/evento/[data]` ← **a tela principal**
 

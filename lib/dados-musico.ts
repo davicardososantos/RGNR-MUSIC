@@ -1,7 +1,9 @@
 import 'server-only'
 import { servico } from '@/lib/supabase/service'
 import { hojeISO } from '@/lib/datas'
+import { avisoEmVigor, carregarAvisosAbertos } from '@/lib/avisos'
 import type {
+  AvisoDoMusico,
   BandaOrigem,
   Evento,
   NivelPresenca,
@@ -43,6 +45,8 @@ export type FichaMusico = {
   ehLider: boolean
   nota: string | null
   banda: BandaOrigem
+  /** Recados dos gestores que valem hoje. */
+  avisos: AvisoDoMusico[]
   instrumentos: InstrumentoDaFicha[]
   /** De hoje em diante, do mais próximo ao mais distante. */
   proximas: DataDaFicha[]
@@ -84,6 +88,7 @@ export async function carregarFicha(slug: string): Promise<FichaMusico | null> {
     { data: relacoes },
     { data: instrumentos },
     { data: funcoes },
+    avisosAbertos,
   ] = await Promise.all([
     db.from('eventos').select('*').order('data'),
     db.from('disponibilidades').select('*').eq('musico_id', musico.id),
@@ -94,6 +99,7 @@ export async function carregarFicha(slug: string): Promise<FichaMusico | null> {
     db.from('musico_instrumento').select('*').eq('musico_id', musico.id),
     db.from('instrumentos').select('id, nome').order('ordem_criticidade'),
     db.from('funcoes').select('id, nome'),
+    carregarAvisosAbertos(),
   ])
 
   const nomeDaFuncao = new Map(
@@ -140,6 +146,9 @@ export async function carregarFicha(slug: string): Promise<FichaMusico | null> {
     ehLider: musico.eh_lider as boolean,
     nota: musico.nota as string | null,
     banda: musico.banda as BandaOrigem,
+    avisos: avisosAbertos.filter(
+      (a) => a.musicoId === musico.id && avisoEmVigor(a, hoje),
+    ),
     instrumentos: (relacoes ?? [])
       .map((r) => ({
         id: r.instrumento_id as string,

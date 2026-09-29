@@ -127,7 +127,8 @@ export function Montador({
             {nivel ? NIVEL_LABEL[nivel] : 'sem nível'}
             {musico.resposta === 'se_precisar' && ' · topou cobrir'}
             {musico.resposta === 'nao' && ' · disse que não pode'}
-            {musico.resposta === null && ' · não respondeu'}
+            {musico.resposta === null &&
+              (musico.avisoDaData ? ' · avisou que não pode' : ' · não respondeu')}
           </p>
         </button>
         <button

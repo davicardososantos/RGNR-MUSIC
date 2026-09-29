@@ -1,5 +1,7 @@
 import 'server-only'
 import { servico } from '@/lib/supabase/service'
+import { avisoCobreData, avisoEmVigor, carregarAvisosAbertos } from '@/lib/avisos'
+import { hojeISO } from '@/lib/datas'
 import type {
   EscalacaoAtual,
   FuncaoDaEscala,
@@ -47,6 +49,7 @@ export async function carregarEscala(
     { data: disponibilidades },
     { data: escalacoes },
     { data: instrumentos },
+    avisosAbertos,
   ] = await Promise.all([
     db.from('formacao').select('*').eq('tipo', evento.tipo).order('ordem'),
     db.from('funcoes').select('*'),
@@ -61,7 +64,10 @@ export async function carregarEscala(
     db.from('disponibilidades').select('*').eq('evento_id', evento.id),
     db.from('escalacoes').select('id, funcao_id, musico_id, tipo').eq('evento_id', evento.id),
     db.from('instrumentos').select('*').order('ordem_criticidade'),
+    carregarAvisosAbertos(),
   ])
+
+  const hoje = hojeISO()
 
   const funcoes: FuncaoDaEscala[] = (formacao ?? []).map((f) => {
     const info = (funcoesBrutas ?? []).find((x) => x.id === f.funcao_id)
@@ -79,6 +85,10 @@ export async function carregarEscala(
 
   const musicos: MusicoParaEscala[] = (musicosBrutos ?? []).map((m) => {
     const disp = (disponibilidades ?? []).find((d) => d.musico_id === m.id)
+    // O que vale é se o aviso cobria o dia do evento, não se vale hoje:
+    // quem abre a escala de uma data passada vê o que se sabia naquele dia.
+    const avisos = avisosAbertos.filter((a) => a.musicoId === m.id)
+    const doDia = avisos.find((a) => avisoCobreData(a, evento.data as string))
     const ordemPorFuncao: Record<string, OrdemEscala> = {}
     for (const o of (overrides ?? []).filter((o) => o.musico_id === m.id)) {
       ordemPorFuncao[o.funcao_id as string] = o.ordem as OrdemEscala
@@ -104,6 +114,8 @@ export async function carregarEscala(
       resposta: disp?.resposta ?? null,
       passagemSom: disp?.passagem_som ?? false,
       observacao: disp?.observacao ?? null,
+      avisoDaData: doDia?.texto ?? null,
+      falarDireto: avisos.some((a) => a.naoCobrar && avisoEmVigor(a, hoje)),
     }
   })
 

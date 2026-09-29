@@ -80,6 +80,13 @@ export function diaEMes(iso: string) {
   return `${d.getDate()} de ${MES[d.getMonth()]}`
 }
 
+/** Período de um aviso: "de 01/10 a 31/10". Nulo quando o aviso não tem datas. */
+export function periodoDoAviso(de: string | null, ate: string | null) {
+  if (!de || !ate) return null
+  const curta = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`
+  return de === ate ? `em ${curta(de)}` : `de ${curta(de)} a ${curta(ate)}`
+}
+
 /** '20:00:00' → '20h' · '18:30:00' → '18h30' */
 export function hora(valor: string | null) {
   if (!valor) return null

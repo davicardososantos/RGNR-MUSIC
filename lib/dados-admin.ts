@@ -1,7 +1,9 @@
 import 'server-only'
 import { servico } from '@/lib/supabase/service'
 import { hojeISO } from '@/lib/datas'
+import { avisoCobreData, avisosPorMusico, carregarAvisosAbertos } from '@/lib/avisos'
 import type {
+  AvisoDoMusico,
   Evento,
   NivelPresenca,
   RespostaDisponibilidade,
@@ -31,6 +33,12 @@ export type LinhaResposta = {
   faltam: number
   /** Alguém respondeu por este músico de um aparelho que não era o dele (PRD §5). */
   outroAparelho: boolean
+  /** Recados dos gestores que valem hoje (avisos_musico). */
+  avisos: AvisoDoMusico[]
+  /** Datas abertas sem resposta que um aviso cobre: a pessoa avisou por fora que não pode. */
+  cobertasPorAviso: string[]
+  /** Algum aviso pede para não cobrar: o contato é direto, pelos gestores. */
+  naoCobrar: boolean
   /** "Só na escala" e presença baixa pedem confirmação dupla (regras §3.3). */
   precisaConfirmacaoDupla: boolean
 }
@@ -43,9 +51,15 @@ export type PainelDoMes = {
   /** Abertas para resposta, de hoje em diante. É o que o formulário mostra. */
   abertos: Evento[]
   totalMusicos: number
-  /** Respondeu todas as datas abertas. */
+  /** Respondeu todas as datas abertas, ou avisou por fora que não pode nelas. */
   emDia: number
+  /** Não está em dia, mas tem aviso de não cobrar: fica fora da cobrança. */
+  semCobranca: number
+  /** Os avisos que valem hoje, com o nome de quem avisou. */
+  avisos: AvisoNoPainel[]
 }
+
+export type AvisoNoPainel = AvisoDoMusico & { nome: string; slug: string }
 
 /**
  * Tudo que o painel precisa, numa ida só ao banco.
@@ -63,16 +77,15 @@ async function carregarEventos() {
     { data: disponibilidades },
     { data: escalacoes },
     { data: formacao },
-    { count: totalMusicos },
+    { data: musicos },
+    avisosAbertos,
   ] = await Promise.all([
     db.from('eventos').select('*').order('data'),
     db.from('disponibilidades').select('evento_id, musico_id, resposta'),
     db.from('escalacoes').select('evento_id, funcao_id'),
     db.from('formacao').select('tipo, funcao_id'),
-    db
-      .from('musicos')
-      .select('*', { count: 'exact', head: true })
-      .eq('no_formulario', true),
+    db.from('musicos').select('id, nome, slug').eq('no_formulario', true).order('nome'),
+    carregarAvisosAbertos(),
   ])
 
   const linhas = disponibilidades ?? []
@@ -117,18 +130,42 @@ async function carregarEventos() {
   )
   const idsAbertos = new Set(abertos.map((e) => e.id))
 
-  const respondidasPorMusico = new Map<string, number>()
-  for (const l of linhas) {
-    if (!idsAbertos.has(l.evento_id as string)) continue
-    const id = l.musico_id as string
-    respondidasPorMusico.set(id, (respondidasPorMusico.get(id) ?? 0) + 1)
+  const respondidas = new Set(
+    linhas
+      .filter((l) => idsAbertos.has(l.evento_id as string))
+      .map((l) => `${l.musico_id}|${l.evento_id}`),
+  )
+
+  // Uma data sem resposta conta como resolvida quando a pessoa avisou por
+  // fora que não pode nela: cobrar o formulário de quem já avisou é ruído.
+  const avisos = avisosPorMusico(avisosAbertos, hoje)
+  const elenco = musicos ?? []
+  let emDia = 0
+  let semCobranca = 0
+
+  for (const m of elenco) {
+    const dele = avisos.get(m.id as string) ?? []
+    const resolvidas = abertos.filter(
+      (e) =>
+        respondidas.has(`${m.id}|${e.id}`) ||
+        dele.some((a) => avisoCobreData(a, e.data)),
+    ).length
+
+    if (resolvidas >= abertos.length) emDia++
+    else if (dele.some((a) => a.naoCobrar)) semCobranca++
   }
 
+  const nomes = new Map(elenco.map((m) => [m.id as string, m]))
+
   return {
-    totalMusicos: totalMusicos ?? 0,
+    totalMusicos: elenco.length,
     abertos,
-    emDia: [...respondidasPorMusico.values()].filter((n) => n >= abertos.length)
-      .length,
+    emDia,
+    semCobranca,
+    avisos: [...avisos.values()].flat().flatMap((a) => {
+      const m = nomes.get(a.musicoId)
+      return m ? [{ ...a, nome: m.nome as string, slug: m.slug as string }] : []
+    }),
     proximos: resumos.filter((r) => r.evento.data >= hoje),
     historico: resumos.filter((r) => r.evento.data < hoje).reverse(),
   }
@@ -142,7 +179,9 @@ export type InicioAdmin = {
   proximo: ResumoEvento | null
   totalMusicos: number
   emDia: number
+  /** Quem dá para cobrar. Não conta quem tem aviso de não cobrar. */
   faltamResponder: number
+  avisos: AvisoNoPainel[]
   datasAbertas: number
   qtdProximos: number
   qtdHistorico: number
@@ -150,14 +189,15 @@ export type InicioAdmin = {
 
 /** O resumo da tela inicial: o que vem agora e o que está pendente. */
 export async function carregarInicioAdmin(): Promise<InicioAdmin> {
-  const { proximos, historico, totalMusicos, emDia, abertos } =
+  const { proximos, historico, totalMusicos, emDia, semCobranca, abertos, avisos } =
     await carregarEventos()
 
   return {
     proximo: proximos[0] ?? null,
     totalMusicos,
     emDia,
-    faltamResponder: Math.max(totalMusicos - emDia, 0),
+    faltamResponder: Math.max(totalMusicos - emDia - semCobranca, 0),
+    avisos,
     datasAbertas: abertos.length,
     qtdProximos: proximos.length,
     qtdHistorico: historico.length,
@@ -180,8 +220,13 @@ export async function carregarRespostas(): Promise<{
 }> {
   const db = servico()
 
-  const [{ data: musicos }, { data: eventos }, { data: disponibilidades }, { data: logs }] =
-    await Promise.all([
+  const [
+    { data: musicos },
+    { data: eventos },
+    { data: disponibilidades },
+    { data: logs },
+    avisosAbertos,
+  ] = await Promise.all([
       db
         .from('musicos')
         .select('id, nome, slug, whatsapp, status, presenca')
@@ -190,6 +235,7 @@ export async function carregarRespostas(): Promise<{
       db.from('eventos').select('*').order('data'),
       db.from('disponibilidades').select('musico_id, evento_id, resposta'),
       db.from('disponibilidade_log').select('musico_id').eq('chave_conhecida', false),
+      carregarAvisosAbertos(),
     ])
 
   const deOutroAparelho = new Set((logs ?? []).map((l) => l.musico_id as string))
@@ -199,6 +245,7 @@ export async function carregarRespostas(): Promise<{
     (e) => e.aberto_para_resposta && e.data >= hoje,
   )
   const idsAbertos = new Set(abertos.map((e) => e.id))
+  const avisos = avisosPorMusico(avisosAbertos, hoje)
 
   const linhas: LinhaResposta[] = (musicos ?? []).map((m) => {
     const minhas = (disponibilidades ?? []).filter(
@@ -211,6 +258,10 @@ export async function carregarRespostas(): Promise<{
 
     const status = m.status as StatusMusico
     const presenca = m.presenca as NivelPresenca | null
+    const dele = avisos.get(m.id as string) ?? []
+    const cobertasPorAviso = abertos
+      .filter((e) => !respostas[e.id] && dele.some((a) => avisoCobreData(a, e.data)))
+      .map((e) => e.id)
 
     return {
       id: m.id as string,
@@ -220,8 +271,11 @@ export async function carregarRespostas(): Promise<{
       status,
       presenca,
       respostas,
-      faltam: abertos.length - minhas.length,
+      faltam: abertos.length - minhas.length - cobertasPorAviso.length,
       outroAparelho: deOutroAparelho.has(m.id as string),
+      avisos: dele,
+      cobertasPorAviso,
+      naoCobrar: dele.some((a) => a.naoCobrar),
       precisaConfirmacaoDupla:
         status === 'presenca_baixa' || presenca === 'so_na_escala',
     }

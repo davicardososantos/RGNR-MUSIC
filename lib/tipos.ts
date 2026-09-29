@@ -241,6 +241,23 @@ export type Evento = {
   status: StatusEvento
 }
 
+/**
+ * Recado dos gestores sobre um músico: o que ele contou por fora do
+ * formulário. Não é resposta dele e nunca vira uma (PRD §5.1).
+ */
+export type AvisoDoMusico = {
+  id: string
+  musicoId: string
+  texto: string
+  /** Período em que avisou que não pode. Os dois juntos, ou nenhum. */
+  indisponivelDe: string | null
+  indisponivelAte: string | null
+  /** Sai da lista de cobrança: o contato é direto, pelos gestores. */
+  naoCobrar: boolean
+  criadoPor: string
+  criadoEm: string
+}
+
 export type Disponibilidade = {
   id: string
   musico_id: string
