@@ -156,6 +156,34 @@ export async function substituir(entrada: z.input<typeof substituirSchema>) {
   revalidatePath('/admin')
 }
 
+const publicarSchema = z.object({
+  eventoId: z.string().uuid(),
+  data: z.string(),
+  publicar: z.boolean(),
+})
+
+/**
+ * Publica a escala da data, ou volta para rascunho (30/09/2026).
+ *
+ * Só escala publicada aparece na área do músico (decisão do Davi): enquanto
+ * os gestores montam, ninguém vê a versão provisória. Voltar para rascunho
+ * esconde de novo, sem apagar confirmação nem imprevisto.
+ */
+export async function alternarPublicacao(entrada: z.input<typeof publicarSchema>) {
+  await exigirGestor()
+  const { eventoId, data, publicar } = publicarSchema.parse(entrada)
+
+  const { error } = await servico()
+    .from('eventos')
+    .update({ status: publicar ? 'publicada' : 'rascunho' })
+    .eq('id', eventoId)
+
+  if (error) throw new Error(`Não consegui ${publicar ? 'publicar' : 'despublicar'}: ${error.message}`)
+  revalidatePath(`/admin/evento/${data}`)
+  revalidatePath('/admin')
+  revalidatePath('/')
+}
+
 const encerrarSchema = z.object({
   eventoId: z.string().uuid(),
   data: z.string(),

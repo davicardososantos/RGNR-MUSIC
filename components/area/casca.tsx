@@ -2,7 +2,6 @@
 
 import type { ReactNode } from 'react'
 import { Icone, type NomeIcone } from '@/components/icone'
-import { EU } from './dados-exemplo'
 import { Avatar, Fundo, Marca } from './ui'
 
 export type Aba = 'inicio' | 'datas' | 'escalas' | 'perfil'
@@ -23,16 +22,6 @@ function Contador({ n }: { n: number }) {
   )
 }
 
-export function AvisoPrototipo({ className = '' }: { className?: string }) {
-  return (
-    <span
-      className={`border-roxo/40 text-roxo-claro inline-flex items-center gap-1.5 rounded-full border border-dashed px-2.5 py-0.5 text-[10px] font-medium tracking-wide uppercase ${className}`}
-    >
-      Protótipo
-    </span>
-  )
-}
-
 /**
  * A moldura do app. No celular: cabeçalho enxuto e abas embaixo, no alcance
  * do polegar. No computador: menu lateral fixo, conteúdo no centro e, em
@@ -42,12 +31,14 @@ export function Casca({
   aba,
   onAba,
   pendentes,
+  eu,
   lateral,
   children,
 }: {
   aba: Aba
   onAba: (a: Aba) => void
   pendentes: number
+  eu: { nome: string; foto: string | null; principal: string | null }
   lateral?: ReactNode
   children: ReactNode
 }) {
@@ -87,19 +78,18 @@ export function Casca({
           })}
         </nav>
 
-        <div className="mt-auto space-y-4">
-          <AvisoPrototipo className="ml-2" />
+        <div className="mt-auto">
           <button
             type="button"
             onClick={() => onAba('perfil')}
             className="flex w-full items-center gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.03] p-3 text-left transition-colors hover:bg-white/[0.06]"
           >
-            <Avatar nome={EU.nome} />
+            <Avatar nome={eu.nome} foto={eu.foto} />
             <span className="min-w-0">
-              <span className="block truncate text-sm font-medium">{EU.nome}</span>
-              <span className="text-muted-foreground block text-xs">
-                {EU.instrumentos.find((i) => i.principal)?.nome}
-              </span>
+              <span className="block truncate text-sm font-medium">{eu.nome}</span>
+              {eu.principal && (
+                <span className="text-muted-foreground block text-xs">{eu.principal}</span>
+              )}
             </span>
           </button>
         </div>
@@ -107,12 +97,9 @@ export function Casca({
 
       {/* Celular: cabeçalho */}
       <header className="sticky top-0 z-20 flex items-center justify-between bg-gradient-to-b from-[#0a0a0e] via-[#0a0a0e]/85 to-transparent px-5 pt-[max(env(safe-area-inset-top),0.9rem)] pb-5 lg:hidden">
-        <div className="flex items-center gap-3">
-          <Marca compacta />
-          <AvisoPrototipo />
-        </div>
+        <Marca compacta />
         <button type="button" onClick={() => onAba('perfil')} aria-label="Meu perfil">
-          <Avatar nome={EU.nome} tamanho="sm" />
+          <Avatar nome={eu.nome} foto={eu.foto} tamanho="sm" />
         </button>
       </header>
 

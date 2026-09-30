@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Icone } from '@/components/icone'
+import { AcessoDaFicha } from '@/components/admin/acesso-da-ficha'
 import { AvisosDaFicha } from '@/components/admin/avisos-da-ficha'
 import { CadastroDoVoluts } from '@/components/admin/cadastro-voluts'
 import { DatasDaFicha } from '@/components/admin/datas-da-ficha'
@@ -128,6 +129,17 @@ export default async function MusicoPage({
           </div>
         )}
       </section>
+
+      {ficha.banda === 'music' && (
+        <AcessoDaFicha
+          musicoId={ficha.id}
+          slug={ficha.slug}
+          whatsapp={ficha.whatsapp}
+          aniversario={ficha.aniversario}
+          ultimoAcesso={ficha.ultimoAcesso}
+          temTelefoneDoCadastro={ficha.temTelefoneDoCadastro}
+        />
+      )}
 
       {ficha.voluts && <CadastroDoVoluts cadastro={ficha.voluts} />}
 

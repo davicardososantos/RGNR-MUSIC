@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Icone, type NomeIcone } from '@/components/icone'
-import { carregarInicioAdmin } from '@/lib/dados-admin'
+import { carregarImprevistos, carregarInicioAdmin } from '@/lib/dados-admin'
 import { dataPorExtenso, hora, periodoDoAviso, quandoRelativo } from '@/lib/datas'
 import { gestorAtual } from '@/lib/supabase/sessao'
 import { EVENTO_LABEL, nomeDoEvento } from '@/lib/tipos'
@@ -46,7 +46,11 @@ function Opcao({
 }
 
 export default async function AdminPage() {
-  const [gestor, inicio] = await Promise.all([gestorAtual(), carregarInicioAdmin()])
+  const [gestor, inicio, imprevistos] = await Promise.all([
+    gestorAtual(),
+    carregarInicioAdmin(),
+    carregarImprevistos(),
+  ])
   const { proximo, totalMusicos, emDia, faltamResponder, datasAbertas } = inicio
 
   const primeiroNome = gestor?.nome?.split(' ')[0] ?? null
@@ -123,6 +127,35 @@ export default async function AdminPage() {
         <p className="border-border text-muted-foreground rounded-xl border border-dashed px-4 py-6 text-center text-sm">
           Nenhuma data futura cadastrada.
         </p>
+      )}
+
+      {/* Quem avisou pela área do músico que não vai mais poder: pede troca. */}
+      {imprevistos.length > 0 && (
+        <section className="space-y-2">
+          <h2 className="text-muted-foreground text-sm font-medium tracking-wide uppercase">
+            Imprevistos · {imprevistos.length}
+          </h2>
+          <div className="space-y-2">
+            {imprevistos.map((i) => (
+              <Link
+                key={`${i.slug}-${i.eventoData}`}
+                href={`/admin/evento/${i.eventoData}/cobertura`}
+                className="border-destructive/40 bg-destructive/5 hover:bg-destructive/10 flex items-start gap-2.5 rounded-xl border px-4 py-3 text-sm transition-colors"
+              >
+                <Icone nome="imprevisto" className="text-destructive mt-0.5 h-4 w-4 shrink-0" />
+                <span className="min-w-0 flex-1">
+                  <span className="font-medium">{i.nome}</span>
+                  <span className="text-muted-foreground">
+                    {' '}
+                    · {i.funcao} · {i.eventoNome} {quandoRelativo(i.eventoData)}
+                  </span>
+                  {i.texto && <span className="text-muted-foreground block">{i.texto}</span>}
+                  <span className="text-muted-foreground mt-0.5 block text-xs">ver quem pode cobrir →</span>
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
       )}
 
       {/* O recado que um gestor recebeu no WhatsApp e o outro precisa saber. */}

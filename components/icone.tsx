@@ -42,6 +42,7 @@ import {
   faLocationDot,
   faChevronLeft,
   faBolt,
+  faEnvelope,
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
@@ -117,6 +118,7 @@ export const ICONES = {
   horario: faClock,
   sair: faRightFromBracket,
   rapido: faBolt,
+  email: faEnvelope,
 } as const
 
 export type NomeIcone = keyof typeof ICONES

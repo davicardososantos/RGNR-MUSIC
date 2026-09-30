@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { Icone, type NomeIcone } from '@/components/icone'
-import { iniciais, type Resposta } from './dados-exemplo'
+import { iniciais } from './formato'
+import type { Resposta } from './tipos'
 
 // ------------------------------------------------------------
 // Cores das respostas: as mesmas do formulário (lima = posso,
@@ -58,34 +59,49 @@ function gradienteDo(nome: string) {
 }
 
 /**
- * Iniciais sobre um gradiente da marca. Na versão real entra a foto que
- * veio do Voluts; o protótipo não usa foto de ninguém.
+ * A foto da pessoa, ou as iniciais sobre um gradiente da marca quando não
+ * há foto (ou quando ela não carrega).
  */
 export function Avatar({
   nome,
+  foto,
   tamanho = 'md',
   destaque = false,
   className = '',
 }: {
   nome: string
+  foto?: string | null
   tamanho?: 'sm' | 'md' | 'lg' | 'xl'
   destaque?: boolean
   className?: string
 }) {
+  const [falhou, setFalhou] = useState(false)
   const medida = {
     sm: 'h-8 w-8 text-[11px]',
     md: 'h-10 w-10 text-xs',
     lg: 'h-14 w-14 text-base',
     xl: 'h-24 w-24 text-3xl',
   }[tamanho]
+  const anel = destaque ? 'ring-lima ring-offset-background ring-2 ring-offset-2' : 'ring-background ring-2'
+
+  if (foto && !falhou) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={foto}
+        alt=""
+        loading="lazy"
+        onError={() => setFalhou(true)}
+        className={`bg-muted inline-block shrink-0 rounded-full object-cover ${medida} ${anel} ${className}`}
+      />
+    )
+  }
 
   return (
     <span
       className={`inline-flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br font-semibold ${gradienteDo(
         nome,
-      )} ${medida} ${
-        destaque ? 'ring-lima ring-offset-background ring-2 ring-offset-2' : 'ring-background ring-2'
-      } ${className}`}
+      )} ${medida} ${anel} ${className}`}
     >
       {iniciais(nome)}
     </span>
@@ -132,10 +148,13 @@ export function SeletorResposta({
   valor,
   onMudar,
   tamanho = 'compacto',
+  desabilitado = false,
 }: {
   valor: Resposta | undefined
   onMudar: (r: Resposta) => void
   tamanho?: 'compacto' | 'grande'
+  /** Data que a liderança já fechou: mostra a resposta, não deixa mudar. */
+  desabilitado?: boolean
 }) {
   if (tamanho === 'grande') {
     return (
@@ -148,7 +167,8 @@ export function SeletorResposta({
               type="button"
               onClick={() => onMudar(r)}
               aria-pressed={ativo}
-              className={`flex h-20 flex-col items-center justify-center gap-2 rounded-2xl border text-sm font-medium transition-all active:scale-[0.96] ${
+              disabled={desabilitado}
+              className={`flex h-20 disabled:pointer-events-none disabled:opacity-50 flex-col items-center justify-center gap-2 rounded-2xl border text-sm font-medium transition-all active:scale-[0.96] ${
                 ativo ? RESPOSTA[r].ativo : 'border-white/10 bg-white/[0.03] hover:bg-white/[0.06]'
               }`}
             >
@@ -171,9 +191,10 @@ export function SeletorResposta({
             type="button"
             onClick={() => onMudar(r)}
             aria-pressed={ativo}
+            disabled={desabilitado}
             aria-label={RESPOSTA[r].rotulo}
             title={RESPOSTA[r].rotulo}
-            className={`flex h-10 w-10 items-center justify-center rounded-full border transition-all active:scale-90 ${
+            className={`flex h-10 w-10 items-center justify-center rounded-full border transition-all active:scale-90 disabled:pointer-events-none disabled:opacity-40 ${
               ativo
                 ? RESPOSTA[r].ativo
                 : 'text-muted-foreground border-white/10 hover:border-white/25 hover:text-foreground'

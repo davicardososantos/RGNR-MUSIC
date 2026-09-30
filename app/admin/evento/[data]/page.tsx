@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { Icone } from '@/components/icone'
 import { Montador } from '@/components/escala/montador'
 import { Disponiveis } from '@/components/escala/disponiveis'
+import { Publicar } from '@/components/escala/publicar'
 import { carregarEscala } from '@/lib/dados-escala'
 import { dataPorExtenso, hora } from '@/lib/datas'
 import { EVENTO_LABEL, nomeDoEvento } from '@/lib/tipos'
@@ -31,6 +32,13 @@ export default async function EventoPage({
   const sePrecisar = musicos.filter((m) => m.resposta === 'se_precisar').length
   const semResposta = musicos.filter((m) => m.resposta === null).length
 
+  // Quem está na escala conta uma vez, mesmo com duas funções (guitarra e
+  // comunicação). Confirmou = todas as linhas dele confirmadas.
+  const pessoas = [...new Set(escalacoes.map((e) => e.musico_id))]
+  const confirmados = pessoas.filter((id) =>
+    escalacoes.filter((e) => e.musico_id === id).every((e) => e.confirmado),
+  ).length
+
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -53,6 +61,8 @@ export default async function EventoPage({
           {funcoes.length} posições
         </p>
       </div>
+
+      <Publicar evento={evento} escalados={pessoas.length} confirmados={confirmados} />
 
       <div className="grid grid-cols-3 gap-2 text-center text-sm">
         <div className="bg-lima/10 rounded-lg px-2 py-2">

@@ -95,7 +95,12 @@ export function Cobertura({
         )
 
         return (
-          <div key={funcao.id} className="border-border rounded-xl border p-4">
+          <div
+            key={funcao.id}
+            className={`rounded-xl border p-4 ${
+              atual.imprevisto_em ? 'border-destructive/50 bg-destructive/5' : 'border-border'
+            }`}
+          >
             <div className="flex items-baseline justify-between gap-2">
               <h3 className="font-medium">{funcao.nome}</h3>
               <span className="text-muted-foreground text-xs">
@@ -106,6 +111,15 @@ export function Cobertura({
             <p className="text-muted-foreground mt-1 text-sm">
               Hoje: <span className="text-foreground">{titular.nome}</span>
             </p>
+            {atual.imprevisto_em && (
+              <p className="text-destructive mt-1 flex items-start gap-1.5 text-sm">
+                <Icone nome="imprevisto" className="mt-0.5 h-3 w-3 shrink-0" />
+                <span>
+                  Avisou pela área que não vai poder
+                  {atual.imprevisto_texto && `: ${atual.imprevisto_texto}`}
+                </span>
+              </p>
+            )}
 
             {cobertura.length === 0 ? (
               <p className="text-muted-foreground mt-3 text-xs">

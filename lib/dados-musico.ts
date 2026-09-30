@@ -48,6 +48,10 @@ export type FichaMusico = {
   banda: BandaOrigem
   /** Cadastro de nome completo no Voluts. Nulo = ainda não ligado. */
   voluts: CadastroVoluts | null
+  /** Acesso à área do músico (30/09/2026). */
+  aniversario: string | null
+  ultimoAcesso: string | null
+  temTelefoneDoCadastro: boolean
   /** Recados dos gestores que valem hoje. */
   avisos: AvisoDoMusico[]
   instrumentos: InstrumentoDaFicha[]
@@ -150,6 +154,9 @@ export async function carregarFicha(slug: string): Promise<FichaMusico | null> {
     nota: musico.nota as string | null,
     banda: musico.banda as BandaOrigem,
     voluts: cadastroDaLinha(musico),
+    aniversario: (musico.aniversario as string | null) ?? null,
+    ultimoAcesso: (musico.ultimo_acesso as string | null) ?? null,
+    temTelefoneDoCadastro: Boolean(musico.telefone_voluts),
     avisos: avisosAbertos.filter(
       (a) => a.musicoId === musico.id && avisoEmVigor(a, hoje),
     ),

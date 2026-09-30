@@ -2,15 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState, type PointerEvent, type ReactNode } from 'react'
 import { Icone } from '@/components/icone'
-import {
-  diaDaSemana,
-  diaDoMes,
-  nomeDoEvento,
-  nomeDoMes,
-  quando,
-  type EventoExemplo,
-  type Resposta,
-} from './dados-exemplo'
+import { useArea } from './contexto'
+import { diaDaSemana, diaDoMes, ehFire, iconeDoEvento, nomeDoEvento, nomeDoMes, quando } from './formato'
+import type { EventoArea, Resposta } from './tipos'
 import { Comemoracao, RESPOSTA } from './ui'
 
 const LIMIAR = 110
@@ -20,19 +14,24 @@ const LIMIAR = 110
  *
  * Arrastar para a direita é "sim", para a esquerda "não", para cima "se
  * precisar". Os três botões fazem o mesmo, e no computador as setas do
- * teclado também. Cada resposta grava na hora (na versão real, uma Server
- * Action por cartão, como o formulário já faz).
+ * teclado também. Cada resposta grava na hora, uma Server Action por cartão.
+ *
+ * "Chego na passagem de som" vem ligado em todo cartão e a pessoa desliga se
+ * for o caso: sem isso, toda resposta rápida chegaria para os gestores como
+ * "não passa o som", que na escala é aviso.
  */
 export function RespostaRapida({
   fila,
   onResponder,
   onFechar,
 }: {
-  fila: EventoExemplo[]
-  onResponder: (eventoId: string, resposta: Resposta | null) => void
+  fila: EventoArea[]
+  onResponder: (eventoId: string, resposta: Resposta, passagemSom: boolean) => void
   onFechar: () => void
 }) {
+  const { hoje } = useArea()
   const [indice, setIndice] = useState(0)
+  const [semPassagem, setSemPassagem] = useState<Set<string>>(new Set())
   const [feitas, setFeitas] = useState<Resposta[]>([])
   const [arrasto, setArrasto] = useState({ x: 0, y: 0 })
   const [arrastando, setArrastando] = useState(false)
@@ -48,23 +47,23 @@ export function RespostaRapida({
       setSaindo(r)
       if ('vibrate' in navigator) navigator.vibrate?.(12)
       setTimeout(() => {
-        onResponder(atual.id, r)
+        onResponder(atual.id, r, !semPassagem.has(atual.id))
         setFeitas((f) => [...f, r])
         setSaindo(null)
         setArrasto({ x: 0, y: 0 })
         setIndice((i) => i + 1)
       }, 280)
     },
-    [atual, saindo, onResponder],
+    [atual, saindo, onResponder, semPassagem],
   )
 
+  // Volta para o cartão anterior. A resposta dada continua salva até a
+  // pessoa escolher outra, que grava por cima.
   const desfazer = useCallback(() => {
     if (indice === 0 || saindo) return
-    const anterior = fila[indice - 1]
-    onResponder(anterior.id, null)
     setFeitas((f) => f.slice(0, -1))
     setIndice((i) => i - 1)
-  }, [fila, indice, saindo, onResponder])
+  }, [indice, saindo])
 
   useEffect(() => {
     const tecla = (e: KeyboardEvent) => {
@@ -87,7 +86,7 @@ export function RespostaRapida({
   // ---------------- arrastar ----------------
 
   function comecar(e: PointerEvent<HTMLDivElement>) {
-    if (saindo) return
+    if (saindo || (e.target as HTMLElement).closest('[data-sem-arrasto]')) return
     inicio.current = { x: e.clientX, y: e.clientY }
     setArrastando(true)
     e.currentTarget.setPointerCapture(e.pointerId)
@@ -252,7 +251,18 @@ export function RespostaRapida({
                         opacity: i === 2 ? 0.5 : 1,
                       }}
                     >
-                      <CartaoData evento={e} />
+                      <CartaoData
+                        evento={e}
+                        hoje={hoje}
+                        passagem={!semPassagem.has(e.id)}
+                        onPassagem={() =>
+                          setSemPassagem((atual) => {
+                            const novo = new Set(atual)
+                            if (!novo.delete(e.id)) novo.add(e.id)
+                            return novo
+                          })
+                        }
+                      />
                       {topo && (
                         <>
                           <Carimbo texto="Sim" className="border-lima text-lima top-8 left-6 -rotate-12" forca={intencao.sim} />
@@ -294,15 +304,25 @@ export function RespostaRapida({
   )
 }
 
-function CartaoData({ evento: e }: { evento: EventoExemplo }) {
+function CartaoData({
+  evento: e,
+  hoje,
+  passagem,
+  onPassagem,
+}: {
+  evento: EventoArea
+  hoje: string
+  passagem: boolean
+  onPassagem: () => void
+}) {
   return (
     <div className="flex h-full flex-col justify-between p-7">
       <div className="flex items-center justify-between">
         <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 text-sm font-medium">
-          <Icone nome={e.tipo} className={`h-3.5 w-3.5 ${e.tipo === 'fire' ? 'text-roxo-claro' : 'text-lima'}`} />
+          <Icone nome={iconeDoEvento(e)} className={`h-3.5 w-3.5 ${ehFire(e) ? 'text-roxo-claro' : 'text-lima'}`} />
           {nomeDoEvento(e)}
         </span>
-        <span className="text-muted-foreground text-sm">{quando(e.data)}</span>
+        <span className="text-muted-foreground text-sm">{quando(e.data, hoje)}</span>
       </div>
 
       <div>
@@ -313,15 +333,31 @@ function CartaoData({ evento: e }: { evento: EventoExemplo }) {
         <p className="mt-2 text-2xl font-medium capitalize">{nomeDoMes(e.data)}</p>
       </div>
 
-      <div className="flex gap-6 text-sm">
+      <div className="flex items-end justify-between gap-4 text-sm">
         <div>
           <p className="text-muted-foreground text-xs">Começa</p>
           <p className="text-base font-medium">{e.hora}</p>
         </div>
-        <div>
-          <p className="text-muted-foreground text-xs">Passagem de som</p>
-          <p className="text-base font-medium">{e.passagem}</p>
-        </div>
+        {e.passagem && (
+          <button
+            type="button"
+            data-sem-arrasto
+            onClick={onPassagem}
+            role="switch"
+            aria-checked={passagem}
+            className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 py-2 pr-2 pl-3 text-left"
+          >
+            <span>
+              <span className="text-muted-foreground block text-xs">Chego na passagem</span>
+              <span className="block text-base font-medium">{e.passagem}</span>
+            </span>
+            <span className={`relative h-6 w-10 shrink-0 rounded-full transition-colors ${passagem ? 'bg-lima' : 'bg-white/15'}`}>
+              <span
+                className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow transition-all ${passagem ? 'left-5' : 'left-1'}`}
+              />
+            </span>
+          </button>
+        )}
       </div>
     </div>
   )

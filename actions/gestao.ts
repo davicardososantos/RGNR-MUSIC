@@ -80,6 +80,45 @@ export async function ajustarDisponibilidade(
   revalidatePath(`/admin/evento/${data}`)
 }
 
+const contatoSchema = z.object({
+  musicoId: z.string().uuid(),
+  slug: z.string().max(60),
+  whatsapp: z.string().max(30),
+  /** dd/mm/aaaa, ou vazio para apagar */
+  nascimento: z.string().max(10),
+})
+
+/**
+ * O gestor corrige o WhatsApp e a data de nascimento de um músico
+ * (30/09/2026). São as duas coisas que a área do músico pede para entrar:
+ * quem está sem data no cadastro (ou com número errado) só entra depois
+ * disso.
+ */
+export async function atualizarContato(entrada: z.input<typeof contatoSchema>) {
+  await exigirGestor()
+  const { musicoId, slug, whatsapp, nascimento } = contatoSchema.parse(entrada)
+
+  const numero = whatsapp.replace(/\D/g, '')
+  if (numero && numero.length < 10) throw new Error('WhatsApp precisa de DDD e número.')
+
+  let aniversario: string | null = null
+  if (nascimento.trim()) {
+    const m = nascimento.match(/^(\d{2})\/(\d{2})\/(\d{4})$/)
+    const data = m ? new Date(`${m[3]}-${m[2]}-${m[1]}T12:00:00`) : null
+    if (!m || !data || Number.isNaN(data.getTime()) || data.getDate() !== Number(m[1]))
+      throw new Error('Data de nascimento inválida. Use dd/mm/aaaa.')
+    aniversario = `${m[3]}-${m[2]}-${m[1]}`
+  }
+
+  const { error } = await servico()
+    .from('musicos')
+    .update({ whatsapp: numero || null, aniversario, atualizado_em: new Date().toISOString() })
+    .eq('id', musicoId)
+  if (error) throw new Error(`Não consegui salvar: ${error.message}`)
+
+  revalidatePath(`/admin/musicos/${slug}`)
+}
+
 const dataISO = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
 
 const avisoSchema = z

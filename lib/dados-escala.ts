@@ -62,7 +62,10 @@ export async function carregarEscala(
     db.from('musico_instrumento').select('*').eq('ativo', true),
     db.from('musico_funcao_ordem').select('*'),
     db.from('disponibilidades').select('*').eq('evento_id', evento.id),
-    db.from('escalacoes').select('id, funcao_id, musico_id, tipo').eq('evento_id', evento.id),
+    db
+      .from('escalacoes')
+      .select('id, funcao_id, musico_id, tipo, confirmado, imprevisto_em, imprevisto_texto')
+      .eq('evento_id', evento.id),
     db.from('instrumentos').select('*').order('ordem_criticidade'),
     carregarAvisosAbertos(),
   ])

@@ -2,28 +2,24 @@
 
 import { useState } from 'react'
 import { Icone } from '@/components/icone'
+import { useArea } from './contexto'
 import {
-  EU,
-  EVENTOS,
-  HISTORICO,
   dataLonga,
   diaDaSemana,
   diaDoMes,
   diasAte,
+  ehFire,
+  iconeDoEvento,
   nomeDoEvento,
   nomeDoMes,
   quando,
-  type EscalaExemplo,
-  type EventoExemplo,
-} from './dados-exemplo'
+} from './formato'
+import type { EscalaArea, EventoArea, HistoricoArea } from './tipos'
 import { Avatar, Etiqueta, TituloSecao, vidro } from './ui'
 
-export const eventoDa = (escala: EscalaExemplo) =>
-  EVENTOS.find((e) => e.id === escala.eventoId) as EventoExemplo
+export const colegas = (escala: EscalaArea) => escala.formacao.filter((c) => !c.voce)
 
-export const colegas = (escala: EscalaExemplo) => escala.formacao.filter((c) => !c.voce)
-
-function StatusEscala({ escala }: { escala: EscalaExemplo }) {
+function StatusEscala({ escala }: { escala: EscalaArea }) {
   if (escala.status === 'confirmado')
     return (
       <Etiqueta tom="lima">
@@ -46,22 +42,30 @@ function StatusEscala({ escala }: { escala: EscalaExemplo }) {
   )
 }
 
-function Rostos({ escala, limite = 4 }: { escala: EscalaExemplo; limite?: number }) {
+function Rostos({ escala, limite = 4 }: { escala: EscalaArea; limite?: number }) {
   const outros = colegas(escala)
+  if (outros.length === 0) return null
   const nomes = outros.map((c) => c.nome)
   const texto =
-    nomes.length <= 2
-      ? nomes.join(' e ')
-      : `${nomes.slice(0, 2).join(', ')} e mais ${nomes.length - 2}`
+    nomes.length <= 2 ? nomes.join(' e ') : `${nomes.slice(0, 2).join(', ')} e mais ${nomes.length - 2}`
   return (
     <div className="flex items-center gap-3">
       <div className="flex -space-x-1.5">
         {outros.slice(0, limite).map((c) => (
-          <Avatar key={c.nome} nome={c.nome} tamanho="sm" />
+          <Avatar key={`${c.nome}-${c.funcao}`} nome={c.nome} foto={c.foto} tamanho="sm" />
         ))}
       </div>
       <p className="text-muted-foreground min-w-0 truncate text-sm">com {texto}</p>
     </div>
+  )
+}
+
+function IconeEvento({ evento, className = 'h-3 w-3' }: { evento: EventoArea; className?: string }) {
+  return (
+    <Icone
+      nome={iconeDoEvento(evento)}
+      className={`${className} ${ehFire(evento) ? 'text-roxo-claro' : 'text-lima'}`}
+    />
   )
 }
 
@@ -71,12 +75,14 @@ export function CartaoProximaEscala({
   onAbrir,
   onConfirmar,
 }: {
-  escala: EscalaExemplo
+  escala: EscalaArea
   onAbrir: () => void
   onConfirmar: () => void
 }) {
-  const e = eventoDa(escala)
-  const faltam = diasAte(e.data)
+  const { hoje, evento } = useArea()
+  const e = evento(escala.eventoId)
+  if (!e) return null
+  const faltam = diasAte(e.data, hoje)
 
   return (
     <div className="from-lima/70 via-roxo/50 relative rounded-[2rem] bg-gradient-to-br to-white/[0.04] p-px shadow-[0_30px_80px_-40px] shadow-lima/40">
@@ -88,7 +94,7 @@ export function CartaoProximaEscala({
           <div className="space-y-4">
             <Etiqueta tom="cheio">
               <Icone nome="musica" className="h-3 w-3" />
-              Você toca {faltam <= 1 ? quando(e.data) : `${diaDaSemana(e.data)}`}
+              {escala.planoB ? 'Você é plano B' : 'Você toca'} {faltam <= 1 ? quando(e.data, hoje) : diaDaSemana(e.data)}
             </Etiqueta>
             <div>
               <p className="text-muted-foreground text-sm capitalize">
@@ -114,10 +120,10 @@ export function CartaoProximaEscala({
         <div className="relative mt-6 grid grid-cols-3 gap-2">
           {[
             ['Sua função', escala.funcao],
-            ['Passagem', e.passagem],
+            ['Passagem', e.passagem ?? 'Sem passagem'],
             ['Começa', e.hora],
           ].map(([rotulo, valor]) => (
-            <div key={rotulo} className="rounded-2xl border border-white/[0.07] bg-white/[0.03] px-3 py-2.5">
+            <div key={rotulo} className="min-w-0 rounded-2xl border border-white/[0.07] bg-white/[0.03] px-3 py-2.5">
               <p className="text-muted-foreground text-[11px]">{rotulo}</p>
               <p className="truncate font-semibold">{valor}</p>
             </div>
@@ -171,45 +177,68 @@ export function DetalheEscala({
   onConfirmar,
   onImprevisto,
 }: {
-  escala: EscalaExemplo
+  escala: EscalaArea
   onConfirmar: () => void
-  onImprevisto: (texto: string) => void
+  onImprevisto: (texto: string) => Promise<void>
 }) {
-  const e = eventoDa(escala)
+  const { hoje, evento } = useArea()
+  const e = evento(escala.eventoId)
   const [avisando, setAvisando] = useState(false)
+  const [enviando, setEnviando] = useState(false)
   const [texto, setTexto] = useState('')
+  if (!e) return null
+
+  async function avisar() {
+    setEnviando(true)
+    try {
+      await onImprevisto(texto)
+    } finally {
+      setEnviando(false)
+    }
+  }
 
   return (
     <div className="space-y-7 pb-4">
       <div className="space-y-3">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Etiqueta>
-            <Icone nome={e.tipo} className={`h-3 w-3 ${e.tipo === 'fire' ? 'text-roxo-claro' : 'text-lima'}`} />
+            <IconeEvento evento={e} />
             {nomeDoEvento(e)}
           </Etiqueta>
           <StatusEscala escala={escala} />
         </div>
         <h2 className="text-3xl font-semibold tracking-tight first-letter:uppercase">{dataLonga(e.data)}</h2>
-        <p className="text-muted-foreground">{quando(e.data)}</p>
+        <p className="text-muted-foreground">{quando(e.data, hoje)}</p>
       </div>
 
       <div className="border-lima/25 bg-lima/[0.06] rounded-3xl border p-5">
-        <p className="text-muted-foreground text-xs font-semibold tracking-[0.14em] uppercase">Você toca</p>
+        <p className="text-muted-foreground text-xs font-semibold tracking-[0.14em] uppercase">
+          {escala.planoB ? 'Você é plano B de' : 'Você toca'}
+        </p>
         <p className="text-lima mt-1 text-3xl font-semibold tracking-tight">{escala.funcao}</p>
+        {escala.planoB && (
+          <p className="text-muted-foreground mt-2 text-sm">
+            Se alguém não puder, a liderança chama você primeiro.
+          </p>
+        )}
       </div>
 
       <div>
         <TituloSecao>Horários</TituloSecao>
         <div className="relative space-y-4 pl-6">
-          <span className="absolute top-2 bottom-2 left-[5px] w-px bg-gradient-to-b from-roxo to-lima" />
-          {[
-            ['Passagem de som', e.passagem, 'bg-roxo'],
-            [nomeDoEvento(e), e.hora, 'bg-lima'],
-          ].map(([rotulo, hora, cor]) => (
+          {e.passagem && (
+            <span className="from-roxo to-lima absolute top-2 bottom-2 left-[5px] w-px bg-gradient-to-b" />
+          )}
+          {(
+            [
+              e.passagem ? ['Passagem de som', e.passagem, 'bg-roxo'] : null,
+              [nomeDoEvento(e), e.hora, 'bg-lima'],
+            ].filter(Boolean) as string[][]
+          ).map(([rotulo, horaTxt, cor]) => (
             <div key={rotulo} className="relative flex items-baseline justify-between">
               <span className={`absolute top-1.5 -left-6 h-[11px] w-[11px] rounded-full ring-4 ring-[#0d0d12] ${cor}`} />
               <span className="text-sm">{rotulo}</span>
-              <span className="font-semibold tabular-nums">{hora}</span>
+              <span className="font-semibold tabular-nums">{horaTxt}</span>
             </div>
           ))}
         </div>
@@ -220,12 +249,12 @@ export function DetalheEscala({
         <div className="grid grid-cols-2 gap-2.5">
           {escala.formacao.map((c) => (
             <div
-              key={c.nome}
+              key={`${c.nome}-${c.funcao}`}
               className={`flex items-center gap-3 rounded-2xl border p-3 ${
                 c.voce ? 'border-lima/40 bg-lima/[0.06]' : 'border-white/[0.07] bg-white/[0.02]'
               }`}
             >
-              <Avatar nome={c.nome} destaque={c.voce} />
+              <Avatar nome={c.nome} foto={c.foto} destaque={c.voce} />
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium">{c.voce ? 'Você' : c.nome}</p>
                 <p className="text-muted-foreground truncate text-xs">{c.funcao}</p>
@@ -239,7 +268,7 @@ export function DetalheEscala({
         <div className="border-roxo/30 bg-roxo/10 rounded-3xl border p-5 text-sm">
           <p className="font-medium">A liderança já recebeu o seu aviso.</p>
           <p className="text-muted-foreground mt-1">
-            Obrigado por avisar cedo. Eles vão procurar alguém para cobrir o {escala.funcao.toLowerCase()}.
+            Obrigado por avisar cedo. Eles vão procurar alguém para cobrir você.
           </p>
         </div>
       ) : avisando ? (
@@ -266,11 +295,12 @@ export function DetalheEscala({
             </button>
             <button
               type="button"
-              onClick={() => onImprevisto(texto)}
-              className="bg-roxo flex h-12 flex-[2] items-center justify-center gap-2 rounded-2xl text-sm font-semibold text-white transition-all active:scale-[0.98]"
+              onClick={avisar}
+              disabled={enviando}
+              className="bg-roxo flex h-12 flex-[2] items-center justify-center gap-2 rounded-2xl text-sm font-semibold text-white transition-all active:scale-[0.98] disabled:opacity-60"
             >
               <Icone nome="enviar" className="h-3.5 w-3.5" />
-              Avisar a liderança
+              {enviando ? 'Avisando…' : 'Avisar a liderança'}
             </button>
           </div>
         </div>
@@ -303,15 +333,21 @@ export function DetalheEscala({
 /** A aba Escalas: as próximas e o que já tocou. */
 export function TelaEscalas({
   escalas,
+  historico,
+  tocouNoAno,
   onAbrir,
 }: {
-  escalas: EscalaExemplo[]
+  escalas: EscalaArea[]
+  historico: HistoricoArea[]
+  tocouNoAno: number
   onAbrir: (eventoId: string) => void
 }) {
-  const funcoes = HISTORICO.map((h) => h.funcao)
-  const maisTocado = [...new Set(funcoes)].sort(
-    (a, b) => funcoes.filter((f) => f === b).length - funcoes.filter((f) => f === a).length,
-  )[0]
+  const { hoje, evento } = useArea()
+  const funcoes = historico.map((h) => h.funcao)
+  const maisTocado =
+    [...new Set(funcoes)].sort(
+      (a, b) => funcoes.filter((f) => f === b).length - funcoes.filter((f) => f === a).length,
+    )[0] ?? 'Nada ainda'
 
   return (
     <div className="space-y-10">
@@ -322,11 +358,11 @@ export function TelaEscalas({
 
       <div className="grid grid-cols-3 gap-2.5">
         {[
-          [String(EU.tocouNoAno), 'vezes em 2026'],
+          [String(tocouNoAno), `vezes em ${hoje.slice(0, 4)}`],
           [String(escalas.length), escalas.length === 1 ? 'próxima' : 'próximas'],
           [maisTocado, 'o que mais toca'],
         ].map(([valor, rotulo]) => (
-          <div key={rotulo} className={`${vidro} px-4 py-4`}>
+          <div key={rotulo} className={`${vidro} min-w-0 px-4 py-4`}>
             <p className="truncate text-2xl font-semibold tracking-tight tabular-nums">{valor}</p>
             <p className="text-muted-foreground text-xs">{rotulo}</p>
           </div>
@@ -336,11 +372,17 @@ export function TelaEscalas({
       <section>
         <TituloSecao>Próximas</TituloSecao>
         {escalas.length === 0 ? (
-          <p className="text-muted-foreground text-sm">Nenhuma escala publicada para você ainda.</p>
+          <div className={`${vidro} p-6`}>
+            <p className="font-medium">Nenhuma escala publicada para você agora.</p>
+            <p className="text-muted-foreground mt-1 text-sm">
+              Quando a liderança publicar uma escala com você, ela aparece aqui e no Início.
+            </p>
+          </div>
         ) : (
           <div className="grid gap-3 md:grid-cols-2">
             {escalas.map((s) => {
-              const e = eventoDa(s)
+              const e = evento(s.eventoId)
+              if (!e) return null
               return (
                 <button
                   key={s.eventoId}
@@ -350,8 +392,8 @@ export function TelaEscalas({
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-muted-foreground text-sm capitalize">
-                        {nomeDoEvento(e)} · {quando(e.data)}
+                      <p className="text-muted-foreground text-sm first-letter:uppercase">
+                        {nomeDoEvento(e)} · {quando(e.data, hoje)}
                       </p>
                       <p className="mt-0.5 text-xl font-semibold tracking-tight first-letter:uppercase">
                         {dataLonga(e.data)}
@@ -363,7 +405,10 @@ export function TelaEscalas({
                     />
                   </div>
                   <div className="mt-4 flex flex-wrap items-center gap-2">
-                    <Etiqueta tom="lima">{s.funcao}</Etiqueta>
+                    <Etiqueta tom="lima">
+                      {s.planoB ? 'Plano B · ' : ''}
+                      {s.funcao}
+                    </Etiqueta>
                     <StatusEscala escala={s} />
                   </div>
                   <div className="mt-4">
@@ -376,26 +421,28 @@ export function TelaEscalas({
         )}
       </section>
 
-      <section>
-        <TituloSecao>Já tocou</TituloSecao>
-        <div className={`${vidro} divide-y divide-white/[0.06] overflow-hidden`}>
-          {HISTORICO.map((h) => (
-            <div key={h.data} className="flex items-center gap-4 px-5 py-3.5">
-              <div className="w-11 text-center">
-                <p className="text-lg leading-none font-semibold tabular-nums">{diaDoMes(h.data)}</p>
-                <p className="text-muted-foreground mt-1 text-[10px] uppercase">
-                  {nomeDoMes(h.data).slice(0, 3)}
-                </p>
+      {historico.length > 0 && (
+        <section>
+          <TituloSecao>Já tocou</TituloSecao>
+          <div className={`${vidro} divide-y divide-white/[0.06] overflow-hidden`}>
+            {historico.map((h) => (
+              <div key={h.data} className="flex items-center gap-4 px-5 py-3.5">
+                <div className="w-11 text-center">
+                  <p className="text-lg leading-none font-semibold tabular-nums">{diaDoMes(h.data)}</p>
+                  <p className="text-muted-foreground mt-1 text-[10px] uppercase">
+                    {nomeDoMes(h.data).slice(0, 3)}
+                  </p>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">{nomeDoEvento(h)}</p>
+                  <p className="text-muted-foreground text-xs capitalize">{diaDaSemana(h.data)}</p>
+                </div>
+                <span className="text-muted-foreground text-right text-sm">{h.funcao}</span>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{nomeDoEvento(h)}</p>
-                <p className="text-muted-foreground text-xs capitalize">{diaDaSemana(h.data)}</p>
-              </div>
-              <span className="text-muted-foreground text-sm">{h.funcao}</span>
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   )
 }

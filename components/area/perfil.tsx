@@ -1,45 +1,68 @@
 'use client'
 
 import { useState } from 'react'
-import { toast } from 'sonner'
 import { Icone } from '@/components/icone'
-import { EU } from './dados-exemplo'
+import { diaEMes, mascaraTelefone } from './formato'
+import type { InstrumentoArea, PerfilArea } from './tipos'
 import { Avatar, TituloSecao, vidro } from './ui'
 
-const TODOS = ['Baixo', 'Bateria', 'Cajon', 'Guitarra', 'Teclado', 'Violão']
-
 /**
- * Perfil: o que hoje fica no passo 2 do formulário (instrumentos e
- * WhatsApp) mais o que veio do Voluts. Instrumento continua sendo a
- * verdade do próprio músico (PRD §5.1); nível quem define é a liderança.
+ * Perfil: o que antes era o passo 2 do formulário (instrumentos e
+ * WhatsApp), mais foto, nome completo, aniversário e e-mail do cadastro da
+ * igreja. Instrumento continua sendo a verdade do próprio músico (PRD
+ * §5.1); nível quem define é a liderança.
  */
-export function TelaPerfil({ onSair }: { onSair: () => void }) {
-  const [toco, setToco] = useState(new Set(EU.instrumentos.map((i) => i.nome)))
-  const [principal, setPrincipal] = useState(EU.instrumentos.find((i) => i.principal)!.nome)
+export function TelaPerfil({
+  eu,
+  instrumentos,
+  onSalvar,
+  onSair,
+}: {
+  eu: PerfilArea
+  instrumentos: InstrumentoArea[]
+  onSalvar: (p: { whatsapp: string; principal: string | null; toca: string[] }) => Promise<boolean>
+  onSair: () => void
+}) {
+  const [toco, setToco] = useState(new Set(eu.toca))
+  const [principal, setPrincipal] = useState<string | null>(eu.principal)
+  const [whatsapp, setWhatsapp] = useState(eu.whatsapp ? mascaraTelefone(eu.whatsapp) : '')
+  const [salvando, setSalvando] = useState(false)
 
-  function alternar(nome: string) {
-    setToco((atual) => {
-      const novo = new Set(atual)
-      if (novo.has(nome)) {
-        if (nome === principal) return atual
-        novo.delete(nome)
-      } else novo.add(nome)
-      return novo
-    })
+  const nomeDo = (id: string | null) => instrumentos.find((i) => i.id === id)?.nome
+
+  function alternar(id: string) {
+    const novo = new Set(toco)
+    if (novo.has(id)) {
+      novo.delete(id)
+      if (principal === id) setPrincipal([...novo][0] ?? null)
+    } else {
+      novo.add(id)
+      if (!principal) setPrincipal(id)
+    }
+    setToco(novo)
   }
+
+  async function salvar() {
+    setSalvando(true)
+    await onSalvar({ whatsapp, principal, toca: [...toco] })
+    setSalvando(false)
+  }
+
+  const dados: ['aniversario' | 'email', string, string | null][] = [
+    ['aniversario', 'Aniversário', eu.aniversario ? diaEMes(eu.aniversario) : null],
+    ['email', 'E-mail', eu.email],
+  ]
 
   return (
     <div className="space-y-9">
       <div className={`${vidro} relative overflow-hidden p-6 sm:p-8`}>
         <div className="bg-roxo/25 absolute -top-20 -right-10 h-56 w-56 rounded-full blur-3xl" />
         <div className="relative flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
-          <Avatar nome={EU.nome} tamanho="xl" destaque />
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight">{EU.nome}</h1>
-            <p className="text-muted-foreground">{EU.nomeCompleto}</p>
-            <p className="text-lima mt-2 text-sm font-medium">
-              {principal} · na banda desde {EU.naBandaDesde}
-            </p>
+          <Avatar nome={eu.nome} foto={eu.foto} tamanho="xl" destaque />
+          <div className="min-w-0">
+            <h1 className="text-3xl font-semibold tracking-tight">{eu.nome}</h1>
+            {eu.nomeCompleto && <p className="text-muted-foreground">{eu.nomeCompleto}</p>}
+            {nomeDo(principal) && <p className="text-lima mt-2 text-sm font-medium">{nomeDo(principal)}</p>}
           </div>
         </div>
       </div>
@@ -50,29 +73,30 @@ export function TelaPerfil({ onSair }: { onSair: () => void }) {
           Toque para marcar. A estrela é o seu instrumento principal.
         </p>
         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
-          {TODOS.map((nome) => {
-            const marcado = toco.has(nome)
-            const ehPrincipal = principal === nome
+          {instrumentos.map((i) => {
+            const marcado = toco.has(i.id)
+            const ehPrincipal = principal === i.id
             return (
               <div
-                key={nome}
+                key={i.id}
                 className={`flex items-center justify-between rounded-2xl border p-1.5 pl-4 transition-colors ${
                   marcado ? 'border-lima/40 bg-lima/[0.07]' : 'border-white/[0.07] bg-white/[0.02]'
                 }`}
               >
                 <button
                   type="button"
-                  onClick={() => alternar(nome)}
+                  onClick={() => alternar(i.id)}
                   aria-pressed={marcado}
                   className={`flex-1 py-2.5 text-left text-sm font-medium ${marcado ? '' : 'text-muted-foreground'}`}
                 >
-                  {nome}
+                  {i.nome}
                 </button>
                 {marcado && (
                   <button
                     type="button"
-                    onClick={() => setPrincipal(nome)}
-                    aria-label={`Tornar ${nome} o principal`}
+                    onClick={() => setPrincipal(i.id)}
+                    aria-label={`Tornar ${i.nome} o principal`}
+                    aria-pressed={ehPrincipal}
                     className={`flex h-9 w-9 items-center justify-center rounded-xl transition-colors ${
                       ehPrincipal ? 'text-lima' : 'text-muted-foreground/40 hover:text-muted-foreground'
                     }`}
@@ -89,39 +113,27 @@ export function TelaPerfil({ onSair }: { onSair: () => void }) {
       <section>
         <TituloSecao>Seus dados</TituloSecao>
         <div className={`${vidro} divide-y divide-white/[0.06]`}>
-          {(
-            [
-              ['telefone', 'WhatsApp', EU.whatsapp],
-              ['aniversario', 'Aniversário', EU.aniversario],
-            ] as const
-          ).map(([icone, rotulo, valor]) => (
-            <div key={rotulo} className="flex items-center gap-4 px-5 py-4">
-              <Icone nome={icone} className="text-muted-foreground h-4 w-4" />
-              <span className="text-muted-foreground w-28 text-sm">{rotulo}</span>
-              <span className="font-medium tabular-nums">{valor}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section>
-        <TituloSecao>No cadastro do Voluts</TituloSecao>
-        <div className={`${vidro} space-y-4 p-5`}>
-          <div>
-            <p className="text-muted-foreground text-xs">Funções</p>
-            <p className="mt-0.5">{EU.funcoesVoluts.join(', ')}</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground text-xs">Dias que você marcou</p>
-            <ul className="mt-0.5 space-y-0.5">
-              {EU.diasVoluts.map((d) => (
-                <li key={d} className="first-letter:uppercase">
-                  {d}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <p className="text-muted-foreground text-xs">Para mudar esses dados, atualize no app do Voluts.</p>
+          <label className="flex items-center gap-4 px-5 py-3">
+            <Icone nome="telefone" className="text-muted-foreground h-4 w-4 shrink-0" />
+            <span className="text-muted-foreground w-24 shrink-0 text-sm">WhatsApp</span>
+            <input
+              value={whatsapp}
+              onChange={(e) => setWhatsapp(mascaraTelefone(e.target.value))}
+              inputMode="numeric"
+              autoComplete="tel-national"
+              placeholder="(11) 9 0000-0000"
+              className="placeholder:text-muted-foreground/50 min-w-0 flex-1 bg-transparent py-1 font-medium tabular-nums outline-none"
+            />
+          </label>
+          {dados
+            .filter(([, , valor]) => valor)
+            .map(([icone, rotulo, valor]) => (
+              <div key={rotulo} className="flex items-center gap-4 px-5 py-4">
+                <Icone nome={icone} className="text-muted-foreground h-4 w-4 shrink-0" />
+                <span className="text-muted-foreground w-24 shrink-0 text-sm">{rotulo}</span>
+                <span className="min-w-0 truncate font-medium">{valor}</span>
+              </div>
+            ))}
         </div>
       </section>
 
@@ -147,10 +159,11 @@ export function TelaPerfil({ onSair }: { onSair: () => void }) {
       <div className="flex gap-2.5">
         <button
           type="button"
-          onClick={() => toast.success('Perfil salvo')}
-          className="bg-lima text-primary-foreground hover:bg-lima-clara h-12 flex-1 rounded-2xl font-semibold transition-all active:scale-[0.98]"
+          onClick={salvar}
+          disabled={salvando}
+          className="bg-lima text-primary-foreground hover:bg-lima-clara h-12 flex-1 rounded-2xl font-semibold transition-all active:scale-[0.98] disabled:opacity-60"
         >
-          Salvar
+          {salvando ? 'Salvando…' : 'Salvar'}
         </button>
         <button
           type="button"

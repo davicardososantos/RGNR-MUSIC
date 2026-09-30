@@ -53,6 +53,11 @@ export type EscalacaoAtual = {
   funcao_id: string
   musico_id: string
   tipo: 'titular' | 'plano_b'
+  /** O próprio músico confirmou pela área dele (30/09/2026). */
+  confirmado?: boolean
+  /** O próprio músico avisou que não vai mais poder, e o que disse. */
+  imprevisto_em?: string | null
+  imprevisto_texto?: string | null
 }
 
 export type Aviso = {

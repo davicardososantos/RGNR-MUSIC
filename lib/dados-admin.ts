@@ -187,6 +187,62 @@ export type InicioAdmin = {
   qtdHistorico: number
 }
 
+export type ImprevistoNoPainel = {
+  eventoData: string
+  eventoTipo: string
+  eventoNome: string
+  nome: string
+  slug: string
+  funcao: string
+  texto: string | null
+  em: string
+}
+
+/**
+ * Quem avisou pela área do músico que não vai mais poder (30/09/2026).
+ * Só de hoje em diante: o que já passou não pede ação.
+ */
+export async function carregarImprevistos(): Promise<ImprevistoNoPainel[]> {
+  const db = servico()
+  const { data, error } = await db
+    .from('escalacoes')
+    .select(
+      'imprevisto_em, imprevisto_texto, funcoes ( nome ), eventos ( data, tipo, titulo ), musicos!escalacoes_musico_id_fkey ( nome, slug )',
+    )
+    .not('imprevisto_em', 'is', null)
+  if (error) return []
+
+  const hoje = hojeISO()
+  type Linha = {
+    imprevisto_em: string
+    imprevisto_texto: string | null
+    funcoes: { nome: string } | null
+    eventos: { data: string; tipo: string; titulo: string | null } | null
+    musicos: { nome: string; slug: string } | null
+  }
+  const porPessoaEData = new Map<string, ImprevistoNoPainel>()
+  for (const l of (data ?? []) as unknown as Linha[]) {
+    if (!l.eventos || !l.musicos || l.eventos.data < hoje) continue
+    const chave = `${l.musicos.slug}|${l.eventos.data}`
+    const atual = porPessoaEData.get(chave)
+    if (atual) {
+      atual.funcao = `${atual.funcao} + ${l.funcoes?.nome ?? ''}`
+      continue
+    }
+    porPessoaEData.set(chave, {
+      eventoData: l.eventos.data,
+      eventoTipo: l.eventos.tipo,
+      eventoNome: l.eventos.titulo ?? (l.eventos.tipo === 'fire' ? 'Fire' : 'Culto'),
+      nome: l.musicos.nome,
+      slug: l.musicos.slug,
+      funcao: l.funcoes?.nome ?? '',
+      texto: l.imprevisto_texto,
+      em: l.imprevisto_em,
+    })
+  }
+  return [...porPessoaEData.values()].sort((a, b) => a.eventoData.localeCompare(b.eventoData))
+}
+
 /** O resumo da tela inicial: o que vem agora e o que está pendente. */
 export async function carregarInicioAdmin(): Promise<InicioAdmin> {
   const { proximos, historico, totalMusicos, emDia, semCobranca, abertos, avisos } =

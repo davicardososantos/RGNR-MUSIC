@@ -32,7 +32,7 @@ export default async function LoginPage({
       <FormLogin />
 
       <p className="text-muted-foreground mt-8 text-center text-xs">
-        Procurando o formulário de disponibilidade?{' '}
+        Procurando a área do músico?{' '}
         <Link href="/" className="underline underline-offset-4">
           É por aqui
         </Link>

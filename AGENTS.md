@@ -68,13 +68,42 @@ Estas regras vêm do PRD e não devem ser quebradas sem mudar o PRD antes.
    o laboratório de estreia.
 8. **Nada de emoji na interface.** Todo ícone vem do Font Awesome, através de
    `components/icone.tsx`. Ver abaixo.
-9. **O formulário é uma página só** (17/09/2026). A raiz mostra todas as datas
+9. **O formulário é uma página só** (17/09/2026), hoje em `/formulario`; a
+   raiz virou a área do músico em 30/09/2026 (ver abaixo). Ele mostra todas as datas
    abertas de hoje em diante, agrupadas por mês. Antes havia uma rota por mês,
    e quem quisesse responder outubro e novembro tinha de achar o próprio nome
    e conferir os instrumentos duas vezes — era o maior atrito para responder.
 10. **Ajuste de resposta pelo gestor exige motivo**, e é a única coisa
     obrigatória do painel. Não contradiz a D12: ali o gestor fala no lugar de
     outra pessoa. Ver PRD §5.1.
+
+## Área do músico (desde 30/09/2026)
+
+A raiz (`/`) deixou de ser o formulário: é a **área do músico**, com login.
+Código em `components/area/`, `lib/area/` e `actions/area.ts`; tabelas na
+migration `20260930180000_area_do_musico`.
+
+- **Entrar:** WhatsApp + data de nascimento (decisão do Davi). O número
+  confere com `musicos.whatsapp` ou com `musicos.telefone_voluts` (escondido,
+  só para login). Cinco erros no mesmo número travam por 15 minutos
+  (`tentativas_entrada`). A sessão é um cookie de um ano (`rgnr_sessao`),
+  com o SHA-256 em `sessoes_musico`.
+- **O músico nunca vê de onde vem o dado.** Foto, nome completo e aniversário
+  vêm do Voluts, mas a área não cita o Voluts em lugar nenhum (pedido do Davi).
+- **Escala só aparece publicada** (`eventos.status = 'publicada'`, botão
+  "Publicar escala" em `/admin/evento/[data]`). Rascunho é só dos gestores.
+- **Confirmar e avisar imprevisto** gravam em `escalacoes` (`confirmado_em`,
+  `imprevisto_em`, `imprevisto_texto`). Imprevisto aparece no painel, na
+  montagem e na cobertura; a escala não muda sozinha.
+- **Resposta rápida:** um cartão por data (arrastar direita = sim, esquerda =
+  não, cima = se precisar; setas no computador). "Chego na passagem" vem
+  ligado: sem isso toda resposta chegaria como "não passa o som".
+- **O formulário antigo** segue em `/formulario`, sem link na área, como
+  reserva para quem não consegue entrar. `/setembro`, `/outubro` e
+  `/novembro` continuam levando para a raiz.
+- **App na tela do celular:** `app/manifest.ts` e `public/icone-*.png`.
+- Movimentos próprios em `globals.css` (`area-*`), desligados com
+  `prefers-reduced-motion`.
 
 ## Cadastro do Voluts
 
@@ -83,7 +112,8 @@ Desde 30/09/2026, `musicos` tem as colunas do Voluts (`voluts_id`, `nome_complet
 painel (`components/admin/cadastro-voluts.tsx`). Quem preenche é um script da
 liderança que lê o Voluts com o login do gestor e **não fica neste repositório**.
 O app só lê essas colunas. `nome` continua sendo o apelido do formulário, o
-telefone não vem do Voluts, e as funções de lá não mexem em `musico_instrumento`.
+telefone do Voluts vai só para `telefone_voluts` (login, nunca exibido) e as
+funções de lá não mexem em `musico_instrumento`.
 
 ## Ícones
 

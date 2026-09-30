@@ -135,6 +135,20 @@ export function Montador({
             {musico.resposta === null &&
               (musico.avisoDaData ? ' · avisou que não pode' : ' · não respondeu')}
           </p>
+          {atual?.escalacao.imprevisto_em ? (
+            <p className="text-destructive mt-0.5 flex items-center gap-1.5 text-xs font-medium">
+              <Icone nome="imprevisto" className="h-2.5 w-2.5" />
+              Avisou imprevisto
+              {atual.escalacao.imprevisto_texto && `: ${atual.escalacao.imprevisto_texto}`}
+            </p>
+          ) : (
+            atual?.escalacao.confirmado && (
+              <p className="text-lima mt-0.5 flex items-center gap-1.5 text-xs font-medium">
+                <Icone nome="sim" className="h-2.5 w-2.5" />
+                Confirmou
+              </p>
+            )
+          )}
         </button>
         <button
           type="button"

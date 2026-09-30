@@ -39,7 +39,7 @@ export function mensagemCobranca(
   return (
     `Oi, ${primeiroNome}! Tudo bem?\n\n` +
     `Ainda falta você marcar sua disponibilidade de ${periodo}. ` +
-    `Agora dá para marcar tudo de uma vez:\n${url}\n\n` +
+    `É só entrar com o seu WhatsApp e a sua data de nascimento:\n${url}\n\n` +
     `Sua resposta ajuda demais na hora de montar a escala. ` +
     `Vai ser muito bom ter você com a gente!`
   )

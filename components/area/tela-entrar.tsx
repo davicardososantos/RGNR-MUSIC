@@ -1,20 +1,13 @@
 'use client'
 
 import { useState, type FormEvent, type InputHTMLAttributes } from 'react'
+import { useRouter } from 'next/navigation'
 import { Icone } from '@/components/icone'
-import { AvisoPrototipo } from './casca'
+import { entrar } from '@/actions/area'
+import { mascaraTelefone } from './formato'
 import { Fundo, Marca } from './ui'
 
 const soDigitos = (s: string) => s.replace(/\D/g, '')
-
-/** (11) 9 8765-4321 */
-function mascaraTelefone(valor: string) {
-  const d = soDigitos(valor).slice(0, 11)
-  if (d.length <= 2) return d.length ? `(${d}` : ''
-  if (d.length <= 3) return `(${d.slice(0, 2)}) ${d.slice(2)}`
-  if (d.length <= 7) return `(${d.slice(0, 2)}) ${d.slice(2, 3)} ${d.slice(3)}`
-  return `(${d.slice(0, 2)}) ${d.slice(2, 3)} ${d.slice(3, 7)}-${d.slice(7)}`
-}
 
 /** 14/03/2002 */
 function mascaraData(valor: string) {
@@ -56,7 +49,7 @@ function Campo({
   return (
     <label htmlFor={id} className="block space-y-2">
       <span className="text-muted-foreground text-sm">{rotulo}</span>
-      <span className="focus-within:border-lima/60 focus-within:bg-white/[0.05] flex h-14 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-4 transition-colors">
+      <span className="focus-within:border-lima/60 flex h-14 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-4 transition-colors focus-within:bg-white/[0.05]">
         <Icone nome={icone} className="text-muted-foreground h-4 w-4" />
         <input
           id={id}
@@ -70,21 +63,33 @@ function Campo({
 
 /**
  * Entrada da área do músico: WhatsApp + data de nascimento (decisão do
- * Davi, 30/09/2026). A data vem do cadastro do Voluts. No protótipo,
- * qualquer número completo entra.
+ * Davi, 30/09/2026). O aparelho fica lembrado por um ano depois disso.
  */
-export function TelaEntrar({ onEntrar }: { onEntrar: () => void }) {
+export function TelaEntrar() {
+  const router = useRouter()
   const [telefone, setTelefone] = useState('')
   const [nascimento, setNascimento] = useState('')
   const [entrando, setEntrando] = useState(false)
+  const [erro, setErro] = useState<string | null>(null)
 
   const pronto = soDigitos(telefone).length === 11 && soDigitos(nascimento).length === 8
 
-  function enviar(e: FormEvent) {
+  async function enviar(e: FormEvent) {
     e.preventDefault()
-    if (!pronto) return
+    if (!pronto || entrando) return
     setEntrando(true)
-    setTimeout(onEntrar, 650)
+    setErro(null)
+    try {
+      const r = await entrar({ telefone, nascimento })
+      if (r.ok) {
+        router.refresh()
+        return
+      }
+      setErro(r.erro)
+    } catch {
+      setErro('Não consegui entrar agora. Confira a internet e tente de novo.')
+    }
+    setEntrando(false)
   }
 
   return (
@@ -109,9 +114,8 @@ export function TelaEntrar({ onEntrar }: { onEntrar: () => void }) {
 
       {/* O formulário */}
       <section className="flex flex-col justify-between px-6 pt-[max(env(safe-area-inset-top),2rem)] pb-[max(env(safe-area-inset-bottom),1.5rem)] lg:justify-center lg:px-16">
-        <div className="flex items-center justify-between lg:hidden">
+        <div className="lg:hidden">
           <Marca />
-          <AvisoPrototipo />
         </div>
 
         <div className="mx-auto w-full max-w-sm animate-[area-surgir_500ms_ease-out] py-10">
@@ -132,7 +136,10 @@ export function TelaEntrar({ onEntrar }: { onEntrar: () => void }) {
               autoComplete="tel-national"
               placeholder="(11) 9 0000-0000"
               value={telefone}
-              onChange={(e) => setTelefone(mascaraTelefone(e.target.value))}
+              onChange={(e) => {
+                setTelefone(mascaraTelefone(e.target.value))
+                setErro(null)
+              }}
             />
             <Campo
               id="nascimento"
@@ -142,13 +149,26 @@ export function TelaEntrar({ onEntrar }: { onEntrar: () => void }) {
               autoComplete="bday"
               placeholder="dd/mm/aaaa"
               value={nascimento}
-              onChange={(e) => setNascimento(mascaraData(e.target.value))}
+              onChange={(e) => {
+                setNascimento(mascaraData(e.target.value))
+                setErro(null)
+              }}
             />
+
+            {erro && (
+              <p
+                role="alert"
+                className="border-roxo/40 bg-roxo/10 text-roxo-claro flex animate-[area-surgir_200ms_ease-out] items-start gap-2.5 rounded-2xl border px-4 py-3 text-sm"
+              >
+                <Icone nome="atencao" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                {erro}
+              </p>
+            )}
 
             <button
               type="submit"
               disabled={!pronto || entrando}
-              className="bg-lima text-primary-foreground hover:bg-lima-clara flex h-14 w-full items-center justify-center gap-2 rounded-2xl text-base font-semibold shadow-[0_10px_40px_-12px] shadow-lima/50 transition-all active:scale-[0.98] disabled:bg-white/10 disabled:text-muted-foreground disabled:shadow-none"
+              className="bg-lima text-primary-foreground hover:bg-lima-clara disabled:text-muted-foreground flex h-14 w-full items-center justify-center gap-2 rounded-2xl text-base font-semibold shadow-[0_10px_40px_-12px] shadow-lima/50 transition-all active:scale-[0.98] disabled:bg-white/10 disabled:shadow-none"
             >
               {entrando ? (
                 <span className="flex gap-1" aria-label="Entrando">
@@ -170,11 +190,11 @@ export function TelaEntrar({ onEntrar }: { onEntrar: () => void }) {
           </form>
 
           <p className="text-muted-foreground mt-6 text-center text-sm">
-            No protótipo, qualquer número completo entra.
+            Você entra uma vez e o celular fica lembrado.
           </p>
         </div>
 
-        <p className="text-muted-foreground text-center text-xs lg:hidden">
+        <p className="text-muted-foreground text-center text-xs">
           Não conseguiu entrar? Fale com a liderança da banda.
         </p>
       </section>
