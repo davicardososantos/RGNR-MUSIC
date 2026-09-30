@@ -128,6 +128,19 @@ embaixo e "Mais"); peças em `components/painel/ui.tsx` (`Cabecalho`,
   banco: 401 em qualquer método, 5xx/429/rede só em leitura. `app/error.tsx`
   mostra "Tentar de novo" em vez do 500 cru.
 
+## Histórico importado (30/09/2026)
+
+As escalas de **jul/2025 a ago/2026** (81 datas, 574 escalações) vieram dos posts de formação do
+grupo de WhatsApp "RGNR | Multimídia". Os eventos antigos estão como `fechada`, sem
+disponibilidade; as escalações têm `criado_por = 'importado: grupo Multimídia (30/09/2026)'`.
+13 ex-membros entraram com `status = 'fora'` e `no_formulario = false`: aparecem no histórico e em
+Pessoas ("Já tocaram com a banda"), nunca no formulário, na área ou na cobrança. Os scripts ficam
+fora do repo, no vault da liderança.
+
+- Por isso **"disse sim × tocou" usa `tocouNoPeriodo`**: só as datas com formulário (desde
+  set/2026). Comparar "sim" com 14 meses de "tocou" faria todo mundo parecer escalado demais.
+- A ficha mostra só as datas passadas que dizem respeito à pessoa (tocou ou respondeu).
+
 ## Cadastro do Voluts
 
 Desde 30/09/2026, `musicos` tem as colunas do Voluts (`voluts_id`, `nome_completo`,

@@ -22,6 +22,7 @@ export default async function MusicoPage({ params }: PageProps<'/admin/musicos/[
   const zap = linkWhatsApp(ficha.whatsapp, '')
   const { resumo } = ficha
   const foto = ficha.voluts?.fotoUrl ? `/foto/${ficha.id}` : null
+  const ultimaVez = ficha.passadas.find((d) => d.escalado.some((e) => e.tipo === 'titular'))?.evento.data ?? null
 
   return (
     <div className="space-y-8">
@@ -72,13 +73,22 @@ export default async function MusicoPage({ params }: PageProps<'/admin/musicos/[
         <Numero rotulo="Tocou" icone="musica" valor={resumo.tocou} detalhe="como titular" />
         <Numero rotulo="Escalado" icone="escala" valor={resumo.proximasEscalas} detalhe="nas próximas datas" />
         <Numero rotulo="Disse sim" icone="sim" valor={resumo.sim} detalhe="em todas as datas" />
-        <Numero
-          rotulo="Sem resposta"
-          icone="respostas"
-          valor={resumo.faltamAbertas}
-          detalhe="nas datas abertas"
-          alerta={resumo.faltamAbertas > 0 && ficha.banda === 'music'}
-        />
+        {ficha.noFormulario ? (
+          <Numero
+            rotulo="Sem resposta"
+            icone="respostas"
+            valor={resumo.faltamAbertas}
+            detalhe="nas datas abertas"
+            alerta={resumo.faltamAbertas > 0 && ficha.banda === 'music'}
+          />
+        ) : (
+          <Numero
+            rotulo="Última vez"
+            icone="historico"
+            valor={ultimaVez ? `${ultimaVez.slice(8, 10)}/${ultimaVez.slice(5, 7)}/${ultimaVez.slice(2, 4)}` : 'Nunca'}
+            detalhe="que tocou"
+          />
+        )}
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-start">
@@ -109,7 +119,7 @@ export default async function MusicoPage({ params }: PageProps<'/admin/musicos/[
             )}
           </Secao>
 
-          {ficha.banda === 'music' && (
+          {ficha.banda === 'music' && ficha.noFormulario && (
             <AcessoDaFicha
               musicoId={ficha.id}
               slug={ficha.slug}
@@ -124,13 +134,15 @@ export default async function MusicoPage({ params }: PageProps<'/admin/musicos/[
         </div>
 
         <div className="space-y-8">
-          <Secao titulo={`Próximas datas · ${ficha.proximas.length}`}>
-            {ficha.proximas.length === 0 ? (
-              <p className="text-muted-foreground text-sm">Nenhuma data pela frente.</p>
-            ) : (
-              <DatasDaFicha datas={ficha.proximas} musicoId={ficha.id} slug={ficha.slug} nome={ficha.nome} ajustavel />
-            )}
-          </Secao>
+          {ficha.noFormulario && (
+            <Secao titulo={`Próximas datas · ${ficha.proximas.length}`}>
+              {ficha.proximas.length === 0 ? (
+                <p className="text-muted-foreground text-sm">Nenhuma data pela frente.</p>
+              ) : (
+                <DatasDaFicha datas={ficha.proximas} musicoId={ficha.id} slug={ficha.slug} nome={ficha.nome} ajustavel />
+              )}
+            </Secao>
+          )}
 
           {ficha.passadas.length > 0 && (
             <Secao titulo={`Histórico · ${ficha.passadas.length}`}>

@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 
 export default async function MusicosPage() {
   const elenco = await listarElenco()
-  const doMusic = elenco.filter((m) => m.banda === 'music')
+  const doMusic = elenco.filter((m) => m.banda === 'music' && m.noFormulario)
   const naArea = doMusic.filter((m) => m.noFormulario && m.entrouNaArea).length
 
   return (

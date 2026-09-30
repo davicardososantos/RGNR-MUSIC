@@ -27,7 +27,9 @@ export function ListaPessoas({ elenco }: { elenco: LinhaDoElenco[] }) {
   const [busca, setBusca] = useState('')
   const [filtro, setFiltro] = useState<Filtro>('todos')
 
-  const doMusic = elenco.filter((m) => m.banda === 'music')
+  const doMusic = elenco.filter((m) => m.banda === 'music' && m.noFormulario)
+  // Ex-membros (importados do grupo Multimídia em 30/09/2026): só no histórico.
+  const antigos = elenco.filter((m) => m.banda === 'music' && !m.noFormulario)
   const apoio = elenco.filter((m) => m.banda !== 'music')
   const teste = FILTROS.find((f) => f.id === filtro)!.teste
   const termo = semAcento(busca.trim())
@@ -75,6 +77,22 @@ export function ListaPessoas({ elenco }: { elenco: LinhaDoElenco[] }) {
             <Cartao key={m.id} m={m} />
           ))}
         </div>
+      )}
+
+      {antigos.length > 0 && filtro === 'todos' && !termo && (
+        <section className="space-y-3 pt-4">
+          <h2 className="text-muted-foreground text-xs font-semibold tracking-[0.14em] uppercase">
+            Já tocaram com a banda · {antigos.length}
+          </h2>
+          <p className="text-muted-foreground text-sm">
+            Aparecem nas escalas antigas. Não recebem formulário nem entram na área do músico.
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {antigos.map((m) => (
+              <Cartao key={m.id} m={m} />
+            ))}
+          </div>
+        </section>
       )}
 
       {apoio.length > 0 && filtro === 'todos' && !termo && (

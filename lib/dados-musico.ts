@@ -49,6 +49,7 @@ export type FichaMusico = {
   /** Cadastro de nome completo no Voluts. Nulo = ainda não ligado. */
   voluts: CadastroVoluts | null
   /** Acesso à área do músico (30/09/2026). */
+  noFormulario: boolean
   aniversario: string | null
   ultimoAcesso: string | null
   temTelefoneDoCadastro: boolean
@@ -137,7 +138,12 @@ export async function carregarFicha(slug: string): Promise<FichaMusico | null> {
 
   const hoje = hojeISO()
   const proximas = datas.filter((d) => d.evento.data >= hoje)
-  const passadas = datas.filter((d) => d.evento.data < hoje).reverse()
+  // Desde a importação do histórico (30/09/2026) são ~90 datas passadas: a
+  // ficha mostra só as que dizem respeito à pessoa (tocou, foi plano B ou
+  // respondeu), senão vira uma lista de "sem resposta".
+  const passadas = datas
+    .filter((d) => d.evento.data < hoje && (d.escalado.length > 0 || d.resposta !== null))
+    .reverse()
 
   const abertas = proximas.filter((d) => d.evento.aberto_para_resposta)
   const contar = (r: RespostaDisponibilidade) =>
@@ -154,6 +160,7 @@ export async function carregarFicha(slug: string): Promise<FichaMusico | null> {
     nota: musico.nota as string | null,
     banda: musico.banda as BandaOrigem,
     voluts: cadastroDaLinha(musico),
+    noFormulario: Boolean(musico.no_formulario),
     aniversario: (musico.aniversario as string | null) ?? null,
     ultimoAcesso: (musico.ultimo_acesso as string | null) ?? null,
     temTelefoneDoCadastro: Boolean(musico.telefone_voluts),
