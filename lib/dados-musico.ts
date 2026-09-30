@@ -2,6 +2,7 @@ import 'server-only'
 import { servico } from '@/lib/supabase/service'
 import { hojeISO } from '@/lib/datas'
 import { avisoEmVigor, carregarAvisosAbertos } from '@/lib/avisos'
+import { cadastroDaLinha, type CadastroVoluts } from '@/lib/voluts'
 import type {
   AvisoDoMusico,
   BandaOrigem,
@@ -45,6 +46,8 @@ export type FichaMusico = {
   ehLider: boolean
   nota: string | null
   banda: BandaOrigem
+  /** Cadastro de nome completo no Voluts. Nulo = ainda não ligado. */
+  voluts: CadastroVoluts | null
   /** Recados dos gestores que valem hoje. */
   avisos: AvisoDoMusico[]
   instrumentos: InstrumentoDaFicha[]
@@ -146,6 +149,7 @@ export async function carregarFicha(slug: string): Promise<FichaMusico | null> {
     ehLider: musico.eh_lider as boolean,
     nota: musico.nota as string | null,
     banda: musico.banda as BandaOrigem,
+    voluts: cadastroDaLinha(musico),
     avisos: avisosAbertos.filter(
       (a) => a.musicoId === musico.id && avisoEmVigor(a, hoje),
     ),

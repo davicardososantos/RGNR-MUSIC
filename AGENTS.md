@@ -76,6 +76,15 @@ Estas regras vêm do PRD e não devem ser quebradas sem mudar o PRD antes.
     obrigatória do painel. Não contradiz a D12: ali o gestor fala no lugar de
     outra pessoa. Ver PRD §5.1.
 
+## Cadastro do Voluts
+
+Desde 30/09/2026, `musicos` tem as colunas do Voluts (`voluts_id`, `nome_completo`,
+`email`, `aniversario`, `funcoes_voluts`, `dias_voluts`...), mostradas só na ficha do
+painel (`components/admin/cadastro-voluts.tsx`). Quem preenche é um script da
+liderança que lê o Voluts com o login do gestor e **não fica neste repositório**.
+O app só lê essas colunas. `nome` continua sendo o apelido do formulário, o
+telefone não vem do Voluts, e as funções de lá não mexem em `musico_instrumento`.
+
 ## Ícones
 
 Emoji na interface está proibido neste projeto. Motivos, na ordem que importa:

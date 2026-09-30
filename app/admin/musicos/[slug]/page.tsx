@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Icone } from '@/components/icone'
 import { AvisosDaFicha } from '@/components/admin/avisos-da-ficha'
+import { CadastroDoVoluts } from '@/components/admin/cadastro-voluts'
 import { DatasDaFicha } from '@/components/admin/datas-da-ficha'
 import { carregarFicha } from '@/lib/dados-musico'
 import { linkWhatsApp } from '@/lib/whatsapp'
@@ -127,6 +128,8 @@ export default async function MusicoPage({
           </div>
         )}
       </section>
+
+      {ficha.voluts && <CadastroDoVoluts cadastro={ficha.voluts} />}
 
       <section className="space-y-2.5">
         <h2 className="text-muted-foreground text-sm font-medium tracking-wide uppercase">
