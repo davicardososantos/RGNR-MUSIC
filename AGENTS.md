@@ -90,6 +90,8 @@ migration `20260930180000_area_do_musico`.
   com o SHA-256 em `sessoes_musico`.
 - **O músico nunca vê de onde vem o dado.** Foto, nome completo e aniversário
   vêm do Voluts, mas a área não cita o Voluts em lugar nenhum (pedido do Davi).
+  Nem no código da página: a foto passa por `app/foto/[id]` (só com sessão de
+  músico ou gestor), porque o endereço de origem tem "voluts" no caminho.
 - **Escala só aparece publicada** (`eventos.status = 'publicada'`, botão
   "Publicar escala" em `/admin/evento/[data]`). Rascunho é só dos gestores.
 - **Confirmar e avisar imprevisto** gravam em `escalacoes` (`confirmado_em`,

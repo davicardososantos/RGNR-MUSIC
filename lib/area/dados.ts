@@ -28,6 +28,9 @@ const FUNCAO_PARA_MUSICO: Record<string, string> = {
 // Ordem de palco, para a formação sair sempre na mesma sequência.
 const ORDEM_FUNCAO = ['teclado_base', 'teclado_aux', 'guitarra_1', 'guitarra_2', 'violao', 'baixo', 'bateria', 'click_vs', 'comunicacao']
 
+/** A foto passa pelo app (app/foto/[id]): o endereço de origem não chega ao músico. */
+const fotoDo = (musicoId: string, fotoUrl: string | null | undefined) => (fotoUrl ? `/foto/${musicoId}` : null)
+
 const rotuloDasFuncoes = (ids: string[]) =>
   [...ids]
     .sort((a, b) => ORDEM_FUNCAO.indexOf(a) - ORDEM_FUNCAO.indexOf(b))
@@ -150,7 +153,7 @@ export async function carregarArea(musicoId: string): Promise<DadosArea> {
         const chave = `${l.musico_id}:${l.tipo}`
         const atual = pessoas.get(chave) ?? {
           nome: l.musicos?.nome ?? '',
-          foto: l.musicos?.foto_url ?? null,
+          foto: fotoDo(l.musico_id, l.musicos?.foto_url),
           funcoes: [],
           planoB: l.tipo === 'plano_b',
         }
@@ -207,7 +210,7 @@ export async function carregarArea(musicoId: string): Promise<DadosArea> {
     eu: {
       nome: musico.nome as string,
       nomeCompleto: (musico.nome_completo as string | null) ?? null,
-      foto: (musico.foto_url as string | null) ?? null,
+      foto: fotoDo(musicoId, musico.foto_url as string | null),
       whatsapp: (musico.whatsapp as string | null) ?? null,
       email: (musico.email as string | null) ?? null,
       aniversario: (musico.aniversario as string | null) ?? null,
