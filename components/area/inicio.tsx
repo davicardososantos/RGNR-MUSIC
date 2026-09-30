@@ -116,7 +116,7 @@ export function TelaInicio({
                   key={e.id}
                   type="button"
                   onClick={() => onAbrirData(e.id)}
-                  className={`relative w-[5.5rem] shrink-0 snap-start rounded-2xl border px-3 py-3 text-left transition-all hover:-translate-y-0.5 lg:w-auto ${
+                  className={`relative w-[6.5rem] shrink-0 snap-start rounded-2xl border px-3 py-3 text-left transition-all hover:-translate-y-0.5 lg:w-auto ${
                     toco
                       ? 'border-lima/50 bg-lima/[0.08]'
                       : pendente

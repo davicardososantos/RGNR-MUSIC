@@ -84,26 +84,24 @@ export function Avatar({
   }[tamanho]
   const anel = destaque ? 'ring-lima ring-offset-background ring-2 ring-offset-2' : 'ring-background ring-2'
 
-  if (foto && !falhou) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={foto}
-        alt=""
-        loading="lazy"
-        onError={() => setFalhou(true)}
-        className={`bg-muted inline-block shrink-0 rounded-full object-cover ${medida} ${anel} ${className}`}
-      />
-    )
-  }
-
+  // As iniciais ficam por baixo: aparecem enquanto a foto carrega e ficam
+  // se ela não vier.
   return (
     <span
-      className={`inline-flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br font-semibold ${gradienteDo(
+      className={`relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br font-semibold ${gradienteDo(
         nome,
       )} ${medida} ${anel} ${className}`}
     >
       {iniciais(nome)}
+      {foto && !falhou && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={foto}
+          alt=""
+          onError={() => setFalhou(true)}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      )}
     </span>
   )
 }
