@@ -28,6 +28,20 @@ import {
   faPenToSquare,
   faPlus,
   faXmark,
+  faHouse,
+  faCalendarCheck,
+  faCircleUser,
+  faRotateLeft,
+  faTriangleExclamation,
+  faCakeCandles,
+  faPhone,
+  faMobileScreenButton,
+  faArrowLeft,
+  faStar,
+  faPaperPlane,
+  faLocationDot,
+  faChevronLeft,
+  faBolt,
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
@@ -84,6 +98,25 @@ export const ICONES = {
   statusLideranca: faUserTie,
   adicionar: faPlus,
   musica: faMusic,
+
+  // Área do músico
+  inicio: faHouse,
+  datas: faCalendarCheck,
+  perfil: faCircleUser,
+  fechar: faXmark,
+  voltar: faArrowLeft,
+  anterior: faChevronLeft,
+  desfazer: faRotateLeft,
+  imprevisto: faTriangleExclamation,
+  aniversario: faCakeCandles,
+  telefone: faPhone,
+  instalar: faMobileScreenButton,
+  principal: faStar,
+  enviar: faPaperPlane,
+  local: faLocationDot,
+  horario: faClock,
+  sair: faRightFromBracket,
+  rapido: faBolt,
 } as const
 
 export type NomeIcone = keyof typeof ICONES

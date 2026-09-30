@@ -122,6 +122,54 @@
   color-scheme: dark;
 }
 
+/* ---------------------------------------------------------------
+   Área do músico (protótipo de 30/09/2026): movimentos próprios.
+   Usados com animate-[nome_duração_curva] nos componentes de
+   components/area/. Quem pede menos movimento no sistema não vê
+   nenhum deles (media query no fim do bloco).
+   --------------------------------------------------------------- */
+@keyframes area-equalizador {
+  0%, 100% { transform: scaleY(0.3); }
+  50% { transform: scaleY(1); }
+}
+@keyframes area-subir {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes area-deslizar {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+@keyframes area-surgir {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes area-estouro {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  100% {
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.2);
+    opacity: 0;
+  }
+}
+@keyframes area-traco {
+  from { stroke-dashoffset: var(--comprimento); }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes area-anel {
+  from { transform: scale(0.7); opacity: 0.7; }
+  to { transform: scale(1.9); opacity: 0; }
+}
+@keyframes area-pulso {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [class*="animate-[area-"] {
+    animation: none !important;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
