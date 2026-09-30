@@ -20,6 +20,32 @@ const escalarSchema = z.object({
 })
 
 /**
+ * Libera a vaga (função + tipo) antes de gravar quem entra.
+ *
+ * Desde 14/09/2026 a unique de `escalacoes` é (evento, função, músico), para
+ * caber revezamento. O upsert por (evento, função, tipo) que existia aqui
+ * passou a ser recusado pelo Postgres (42P10) e os botões de escalar e de
+ * substituir davam erro. Sai quem ocupava a vaga e também a própria pessoa,
+ * se ela estava na outra vaga da mesma função (plano B virando titular).
+ */
+async function liberarVaga(
+  eventoId: string,
+  funcaoId: string,
+  tipo: 'titular' | 'plano_b',
+  musicoId: string,
+) {
+  const { error } = await servico()
+    .from('escalacoes')
+    .delete()
+    .eq('evento_id', eventoId)
+    .eq('funcao_id', funcaoId)
+    // tipo é enum e musicoId é uuid validado pelo zod: seguro no filtro.
+    .or(`tipo.eq.${tipo},musico_id.eq.${musicoId}`)
+
+  if (error) throw new Error(error.message)
+}
+
+/**
  * Coloca alguém numa função. Substitui quem estava ali.
  *
  * D12: nada é bloqueado aqui. Escalar alguém que o checklist não
@@ -29,19 +55,20 @@ export async function escalar(entrada: z.input<typeof escalarSchema>) {
   const gestor = await exigirGestor()
   const { eventoId, data, funcaoId, musicoId, tipo } = escalarSchema.parse(entrada)
 
-  const { error } = await servico()
-    .from('escalacoes')
-    .upsert(
-      {
-        evento_id: eventoId,
-        funcao_id: funcaoId,
-        musico_id: musicoId,
-        tipo,
-        criado_por: gestor.email,
-        criado_em: new Date().toISOString(),
-      },
-      { onConflict: 'evento_id,funcao_id,tipo' },
-    )
+  try {
+    await liberarVaga(eventoId, funcaoId, tipo, musicoId)
+  } catch (e) {
+    throw new Error(`Não consegui escalar: ${e instanceof Error ? e.message : e}`)
+  }
+
+  const { error } = await servico().from('escalacoes').insert({
+    evento_id: eventoId,
+    funcao_id: funcaoId,
+    musico_id: musicoId,
+    tipo,
+    criado_por: gestor.email,
+    criado_em: new Date().toISOString(),
+  })
 
   if (error) throw new Error(`Não consegui escalar: ${error.message}`)
   revalidatePath(`/admin/evento/${data}`)
@@ -93,28 +120,34 @@ export async function substituir(entrada: z.input<typeof substituirSchema>) {
 
   const db = servico()
 
-  const { data: atual } = await db
+  // Com revezamento pode haver mais de um titular: `maybeSingle()` dava erro
+  // nesse caso. Quem saiu é o titular mais antigo da função.
+  const { data: atuais } = await db
     .from('escalacoes')
-    .select('id, musico_id')
+    .select('musico_id')
     .eq('evento_id', eventoId)
     .eq('funcao_id', funcaoId)
     .eq('tipo', 'titular')
-    .maybeSingle()
+    .order('criado_em')
+    .limit(1)
 
-  const { error } = await db.from('escalacoes').upsert(
-    {
-      evento_id: eventoId,
-      funcao_id: funcaoId,
-      musico_id: entraId,
-      tipo: 'titular',
-      substituiu: atual?.musico_id ?? null,
-      motivo_troca: motivo?.trim() || null,
-      confirmado: false,
-      criado_por: gestor.email,
-      criado_em: new Date().toISOString(),
-    },
-    { onConflict: 'evento_id,funcao_id,tipo' },
-  )
+  try {
+    await liberarVaga(eventoId, funcaoId, 'titular', entraId)
+  } catch (e) {
+    throw new Error(`Não consegui substituir: ${e instanceof Error ? e.message : e}`)
+  }
+
+  const { error } = await db.from('escalacoes').insert({
+    evento_id: eventoId,
+    funcao_id: funcaoId,
+    musico_id: entraId,
+    tipo: 'titular',
+    substituiu: atuais?.[0]?.musico_id ?? null,
+    motivo_troca: motivo?.trim() || null,
+    confirmado: false,
+    criado_por: gestor.email,
+    criado_em: new Date().toISOString(),
+  })
 
   if (error) throw new Error(`Não consegui substituir: ${error.message}`)
 

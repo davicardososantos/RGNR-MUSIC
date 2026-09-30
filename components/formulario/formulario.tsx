@@ -76,9 +76,10 @@ export function Formulario({
   const [respostas, setRespostas] = useState<Record<string, RespostaLocal>>({})
   const [salvos, setSalvos] = useState<Record<string, boolean>>({})
 
-  // Mês já respondido inteiro começa recolhido, e só o toque da pessoa muda
-  // isso depois. Recolher sozinho no meio do preenchimento faria a lista
-  // pular embaixo do dedo bem na hora de conferir o que foi marcado.
+  // Mês já respondido inteiro começa recolhido, menos o mais próximo, e só o
+  // toque da pessoa muda isso depois. Recolher sozinho no meio do
+  // preenchimento faria a lista pular embaixo do dedo bem na hora de
+  // conferir o que foi marcado.
   const [recolhidos, setRecolhidos] = useState<Set<string>>(new Set())
 
   const meses = useMemo(() => agruparPorMes(eventos), [eventos])
@@ -207,9 +208,13 @@ export function Formulario({
         principal: dados.principal,
         cobertura: dados.cobertura,
       })
+      // O mês mais próximo nunca começa recolhido: quem volta ao link quase
+      // sempre quer mudar a data desta semana. Em 30/09/2026 o Alef não achou
+      // o sábado dentro de outubro fechado e desistiu.
       setRecolhidos(
         new Set(
           meses
+            .slice(1)
             .filter((m) => m.eventos.every((e) => respostas[e.id]?.resposta))
             .map((m) => m.chave),
         ),
@@ -321,9 +326,16 @@ export function Formulario({
                   }
                   className="border-border hover:bg-accent/40 flex w-full items-center justify-between gap-3 rounded-lg border px-3.5 py-2.5 text-left transition-colors"
                 >
-                  <span className="flex items-center gap-2">
-                    <span className="font-medium capitalize">{mes.nome}</span>
-                    {completo && <Icone nome="sim" className="text-lima h-3.5 w-3.5" />}
+                  <span className="flex flex-col gap-0.5">
+                    <span className="flex items-center gap-2">
+                      <span className="font-medium capitalize">{mes.nome}</span>
+                      {completo && <Icone nome="sim" className="text-lima h-3.5 w-3.5" />}
+                    </span>
+                    {!aberto && (
+                      <span className="text-muted-foreground text-xs">
+                        Toque para ver ou mudar
+                      </span>
+                    )}
                   </span>
                   <span className="text-muted-foreground flex items-center gap-2 text-xs">
                     {feitas} de {mes.eventos.length}

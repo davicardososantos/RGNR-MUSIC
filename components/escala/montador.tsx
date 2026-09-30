@@ -45,8 +45,13 @@ export function Montador({
 
   function colocar(funcao: FuncaoDaEscala, tipo: 'titular' | 'plano_b', musicoId: string) {
     // Atualiza a tela na hora: a checagem tem que reagir enquanto se monta.
+    // Sai quem estava na vaga e a própria pessoa, se estava na outra vaga
+    // da mesma função: é o que o servidor faz (liberarVaga).
     setEscalacoes((atual) => [
-      ...atual.filter((e) => !(e.funcao_id === funcao.id && e.tipo === tipo)),
+      ...atual.filter(
+        (e) =>
+          !(e.funcao_id === funcao.id && (e.tipo === tipo || e.musico_id === musicoId)),
+      ),
       { id: `tmp-${funcao.id}-${tipo}`, funcao_id: funcao.id, musico_id: musicoId, tipo },
     ])
 
