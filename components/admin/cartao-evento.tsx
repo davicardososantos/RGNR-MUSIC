@@ -26,7 +26,7 @@ export function CartaoEvento({
     <Link
       // ?tipo= é obrigatório: 05/09 tem Conferência e Atmosfera na mesma data.
       href={`/admin/evento/${evento.data}?tipo=${evento.tipo}`}
-      className="border-border hover:bg-accent/40 active:bg-accent block rounded-xl border p-4 transition-colors"
+      className="block rounded-3xl border border-white/[0.07] bg-white/[0.025] p-5 transition-all hover:-translate-y-0.5 hover:bg-white/[0.05]"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">

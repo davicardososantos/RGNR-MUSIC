@@ -1,8 +1,9 @@
 import { LinhaMusico } from '@/components/admin/linha-resposta'
+import { Cabecalho, Numero } from '@/components/painel/ui'
 import { carregarRespostas } from '@/lib/dados-admin'
 import { chaveDoMes, listaPorExtenso, nomeDaChave } from '@/lib/datas'
 
-export const metadata = { title: 'Respostas — Gestão' }
+export const metadata = { title: 'Respostas · Gestão da Banda' }
 
 export default async function RespostasPage() {
   const { eventos, linhas } = await carregarRespostas()
@@ -19,16 +20,28 @@ export default async function RespostasPage() {
   const urlFormulario = process.env.NEXT_PUBLIC_SITE_URL ?? ''
 
   return (
-    <div className="space-y-8">
-      <div className="space-y-1.5">
-        <h1 className="text-2xl font-semibold tracking-tight">Respostas</h1>
-        <p className="text-muted-foreground text-sm">
-          {eventos.length} datas abertas, de {periodo}. {emDia.length} já
-          responderam todas e {faltam.length} têm data em branco. Quem falta mais
-          aparece primeiro.
-          {falarDireto.length > 0 &&
-            ` ${falarDireto.length} ${falarDireto.length === 1 ? 'fica' : 'ficam'} fora da cobrança, com contato direto.`}
-        </p>
+    <div className="mx-auto max-w-4xl space-y-8">
+      <Cabecalho
+        titulo="Respostas"
+        subtitulo={
+          <>
+            {eventos.length} datas abertas, de {periodo}. Quem falta mais aparece primeiro, com a mensagem de cobrança
+            pronta para o WhatsApp.
+            {falarDireto.length > 0 &&
+              ` ${falarDireto.length} ${falarDireto.length === 1 ? 'fica' : 'ficam'} fora da cobrança, com contato direto.`}
+          </>
+        }
+      />
+
+      <div className="grid grid-cols-3 gap-3">
+        <Numero
+          rotulo="Em dia"
+          icone="concluido"
+          valor={emDia.length}
+          medidor={{ valor: emDia.length, total: linhas.length }}
+        />
+        <Numero rotulo="Faltam" icone="respostas" valor={faltam.length} alerta={faltam.length > 0} />
+        <Numero rotulo="Falar direto" icone="aviso" valor={falarDireto.length} />
       </div>
 
       {faltam.length > 0 && (

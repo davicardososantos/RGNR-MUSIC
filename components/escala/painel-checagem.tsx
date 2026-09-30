@@ -41,7 +41,7 @@ export function PainelChecagem({ checagens }: { checagens: Checagem[] }) {
       </ul>
 
       <p className="text-muted-foreground border-border mt-3 border-t pt-3 text-xs">
-        Isto é um checklist, não um portão. Nada aqui impede fechar a escala — a
+        Isto é um checklist, não um portão. Nada aqui impede fechar a escala: a
         decisão continua sendo de vocês.
       </p>
     </div>

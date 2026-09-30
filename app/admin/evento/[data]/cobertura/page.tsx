@@ -1,7 +1,7 @@
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Icone } from '@/components/icone'
 import { Cobertura } from '@/components/escala/cobertura'
+import { Cabecalho } from '@/components/painel/ui'
 import { carregarEscala } from '@/lib/dados-escala'
 import { dataPorExtenso } from '@/lib/datas'
 import { EVENTO_LABEL } from '@/lib/tipos'
@@ -25,25 +25,21 @@ export default async function CoberturaPage({
   const rotulo = EVENTO_LABEL[evento.tipo]
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <Link
-          href={`/admin/evento/${data}?tipo=${evento.tipo}`}
-          className="text-muted-foreground hover:text-foreground text-sm"
-        >
-          ← voltar para a escala
-        </Link>
-
-        <h1 className="flex items-center gap-2.5 text-2xl font-semibold tracking-tight">
-          <Icone nome={rotulo.icone} className={`h-5 w-5 shrink-0 ${rotulo.cor}`} />
-          Quem pode cobrir
-        </h1>
-
-        <p className="text-muted-foreground text-sm">
-          {dataPorExtenso(evento.data)}. Para quando alguém avisa em cima da hora
-          que não vem.
-        </p>
-      </div>
+    <div className="mx-auto max-w-4xl space-y-8">
+      <Cabecalho
+        voltar={{ href: `/admin/evento/${data}?tipo=${evento.tipo}`, rotulo: 'Voltar para a escala' }}
+        titulo={
+          <span className="flex items-center gap-3">
+            <Icone nome={rotulo.icone} className={`h-6 w-6 shrink-0 ${rotulo.cor}`} />
+            Quem pode cobrir
+          </span>
+        }
+        subtitulo={
+          <span className="first-letter:uppercase">
+            {dataPorExtenso(evento.data)}. Para quando alguém avisa em cima da hora que não vem.
+          </span>
+        }
+      />
 
       <Cobertura
         evento={evento}
@@ -52,7 +48,7 @@ export default async function CoberturaPage({
         escalacoesIniciais={escalacoes}
       />
 
-      <p className="text-muted-foreground border-border border-t pt-4 text-xs">
+      <p className="text-muted-foreground border-t border-white/[0.06] pt-4 text-xs">
         Só aparece quem disse que pode ou que topa cobrir, e que ainda não está
         escalado em outra função. Substituir troca na hora e guarda quem saiu.
       </p>

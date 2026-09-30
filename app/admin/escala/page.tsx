@@ -1,31 +1,45 @@
-import Link from 'next/link'
-import { CartaoEvento } from '@/components/admin/cartao-evento'
-import { carregarPainelDoMes } from '@/lib/dados-admin'
+import { CartaoEscala } from '@/components/painel/cartao-escala'
+import { Botao, Cabecalho, Secao } from '@/components/painel/ui'
+import { carregarPainel } from '@/lib/dados-painel'
+import { chaveDoMes, nomeDaChave } from '@/lib/datas'
 
-export const metadata = { title: 'Escalas — Gestão' }
+export const metadata = { title: 'Escalas · Gestão da Banda' }
 
 export default async function EscalasPage() {
-  const { proximos } = await carregarPainelDoMes()
+  const { datas } = await carregarPainel()
+
+  const meses = [...new Set(datas.map((d) => chaveDoMes(d.data)))]
+  const publicadas = datas.filter((d) => d.status === 'publicada').length
+  const completas = datas.filter((d) => d.posicoes > 0 && d.preenchidas >= d.posicoes).length
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <Link href="/admin" className="text-muted-foreground hover:text-foreground text-sm">
-          ← painel
-        </Link>
-        <h1 className="text-2xl font-semibold tracking-tight">Escalas</h1>
-        <p className="text-muted-foreground text-sm">
-          {proximos.length === 0
+    <div className="space-y-10">
+      <Cabecalho
+        titulo="Escalas"
+        subtitulo={
+          datas.length === 0
             ? 'Nenhuma data futura cadastrada.'
-            : `${proximos.length} ${proximos.length === 1 ? 'data pela frente' : 'datas pela frente'}. Toque para montar.`}
-        </p>
-      </div>
+            : `${datas.length} datas pela frente · ${completas} completas · ${publicadas} publicadas.`
+        }
+        acoes={
+          <Botao href="/admin/historico" icone="historico">
+            Histórico
+          </Botao>
+        }
+      />
 
-      <div className="space-y-3">
-        {proximos.map((resumo) => (
-          <CartaoEvento key={resumo.evento.id} resumo={resumo} />
-        ))}
-      </div>
+      {meses.map((mes) => {
+        const doMes = datas.filter((d) => chaveDoMes(d.data) === mes)
+        return (
+          <Secao key={mes} titulo={<span className="capitalize">{nomeDaChave(mes)}</span>}>
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {doMes.map((d) => (
+                <CartaoEscala key={d.id} d={d} />
+              ))}
+            </div>
+          </Secao>
+        )
+      })}
     </div>
   )
 }

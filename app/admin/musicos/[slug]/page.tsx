@@ -5,29 +5,14 @@ import { AcessoDaFicha } from '@/components/admin/acesso-da-ficha'
 import { AvisosDaFicha } from '@/components/admin/avisos-da-ficha'
 import { CadastroDoVoluts } from '@/components/admin/cadastro-voluts'
 import { DatasDaFicha } from '@/components/admin/datas-da-ficha'
+import { Numero, Rosto, Secao, Selo, vidro } from '@/components/painel/ui'
 import { carregarFicha } from '@/lib/dados-musico'
 import { linkWhatsApp } from '@/lib/whatsapp'
-import {
-  NIVEL_LABEL,
-  ORDEM_LABEL,
-  PRESENCA_LABEL,
-  STATUS_LABEL,
-} from '@/lib/tipos'
+import { NIVEL_LABEL, ORDEM_LABEL, PRESENCA_LABEL, STATUS_LABEL } from '@/lib/tipos'
 
 export const dynamic = 'force-dynamic'
 
-function Numero({ valor, rotulo, cor }: { valor: number; rotulo: string; cor: string }) {
-  return (
-    <div className="bg-muted/50 rounded-lg px-2 py-2 text-center">
-      <p className={`text-lg font-semibold ${cor}`}>{valor}</p>
-      <p className="text-muted-foreground text-xs">{rotulo}</p>
-    </div>
-  )
-}
-
-export default async function MusicoPage({
-  params,
-}: PageProps<'/admin/musicos/[slug]'>) {
+export default async function MusicoPage({ params }: PageProps<'/admin/musicos/[slug]'>) {
   const { slug } = await params
   const ficha = await carregarFicha(slug)
 
@@ -36,144 +21,130 @@ export default async function MusicoPage({
   const status = STATUS_LABEL[ficha.status]
   const zap = linkWhatsApp(ficha.whatsapp, '')
   const { resumo } = ficha
+  const foto = ficha.voluts?.fotoUrl ? `/foto/${ficha.id}` : null
 
   return (
-    <div className="space-y-7">
-      <div className="space-y-2">
-        <Link
-          href="/admin/musicos"
-          className="text-muted-foreground hover:text-foreground text-sm"
-        >
-          ← pessoas
-        </Link>
+    <div className="space-y-8">
+      <Link
+        href="/admin/musicos"
+        className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-sm transition-colors"
+      >
+        <Icone nome="anterior" className="h-3 w-3" />
+        Pessoas
+      </Link>
 
-        <h1 className="text-2xl font-semibold tracking-tight">{ficha.nome}</h1>
-
-        <p className="text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
-          <span className="flex items-center gap-1.5">
-            <Icone nome={status.icone} className="h-3.5 w-3.5" />
-            {status.texto}
-          </span>
-          {ficha.presenca && <span>· presença {PRESENCA_LABEL[ficha.presenca].toLowerCase()}</span>}
-          {ficha.ehLider && <span>· liderança</span>}
-          {ficha.banda !== 'music' && <span>· apoio externo</span>}
-        </p>
-
-        {ficha.nota && (
-          <p className="text-muted-foreground border-border rounded-lg border border-dashed px-3 py-2 text-sm">
-            {ficha.nota}
-          </p>
-        )}
-
-        {zap && (
-          <a
-            href={zap}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-lima inline-block text-sm underline-offset-4 hover:underline"
-          >
-            Abrir conversa no WhatsApp
-          </a>
-        )}
-      </div>
-
-      <AvisosDaFicha musicoId={ficha.id} nome={ficha.nome} avisos={ficha.avisos} />
-
-      <div className="grid grid-cols-4 gap-2 text-sm">
-        <Numero valor={resumo.tocou} rotulo="tocou" cor="text-lima" />
-        <Numero valor={resumo.proximasEscalas} rotulo="escalado" cor="text-roxo-claro" />
-        <Numero valor={resumo.sim} rotulo="disse sim" cor="text-foreground" />
-        <Numero
-          valor={resumo.faltamAbertas}
-          rotulo="sem resposta"
-          cor="text-muted-foreground"
-        />
-      </div>
-
-      <section className="space-y-2.5">
-        <h2 className="text-muted-foreground text-sm font-medium tracking-wide uppercase">
-          Instrumentos
-        </h2>
-        {ficha.instrumentos.length === 0 ? (
-          <p className="text-muted-foreground text-sm">
-            Nenhum instrumento cadastrado ainda.
-          </p>
-        ) : (
-          <div className="space-y-2">
-            {ficha.instrumentos.map((i) => (
-              <div
-                key={i.id}
-                className={`border-border flex items-center justify-between rounded-lg border px-3 py-2.5 text-sm ${
-                  i.ativo ? '' : 'opacity-60'
-                }`}
-              >
-                <span>
-                  {i.nome}
-                  {i.principal && (
-                    <span className="text-muted-foreground ml-1.5 text-xs">
-                      principal
-                    </span>
-                  )}
-                  {!i.ativo && (
-                    <span className="text-muted-foreground ml-1.5 text-xs">
-                      informou que não toca
-                    </span>
-                  )}
-                </span>
-                <span className="text-muted-foreground text-xs">
-                  {i.nivel ? NIVEL_LABEL[i.nivel] : 'sem nível'} ·{' '}
-                  {ORDEM_LABEL[i.ordem]}
-                </span>
-              </div>
-            ))}
+      {/* Cabeçalho da pessoa */}
+      <div className={`${vidro} relative overflow-hidden p-6 sm:p-8`}>
+        <div className="bg-roxo/20 absolute -top-24 -right-16 h-64 w-64 rounded-full blur-3xl" />
+        <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
+          <Rosto nome={ficha.nome} foto={foto} tamanho="xl" />
+          <div className="min-w-0 flex-1 space-y-2">
+            <div>
+              <h1 className="text-3xl font-semibold tracking-tight lg:text-4xl">{ficha.nome}</h1>
+              {ficha.voluts?.nomeCompleto && <p className="text-muted-foreground">{ficha.voluts.nomeCompleto}</p>}
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              <Selo>
+                <Icone nome={status.icone} className="h-3 w-3" />
+                {status.texto}
+              </Selo>
+              {ficha.presenca && <Selo>presença {PRESENCA_LABEL[ficha.presenca].toLowerCase()}</Selo>}
+              {ficha.ehLider && <Selo tom="lima">liderança</Selo>}
+              {ficha.banda !== 'music' && <Selo tom="roxo">apoio externo</Selo>}
+            </div>
+            {ficha.nota && <p className="text-muted-foreground text-sm">{ficha.nota}</p>}
           </div>
-        )}
-      </section>
+          {zap && (
+            <a
+              href={zap}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-lima text-primary-foreground hover:bg-lima-clara inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition-all active:scale-[0.97]"
+            >
+              <Icone nome="telefone" className="h-3.5 w-3.5" />
+              WhatsApp
+            </a>
+          )}
+        </div>
+      </div>
 
-      {ficha.banda === 'music' && (
-        <AcessoDaFicha
-          musicoId={ficha.id}
-          slug={ficha.slug}
-          whatsapp={ficha.whatsapp}
-          aniversario={ficha.aniversario}
-          ultimoAcesso={ficha.ultimoAcesso}
-          temTelefoneDoCadastro={ficha.temTelefoneDoCadastro}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Numero rotulo="Tocou" icone="musica" valor={resumo.tocou} detalhe="como titular" />
+        <Numero rotulo="Escalado" icone="escala" valor={resumo.proximasEscalas} detalhe="nas próximas datas" />
+        <Numero rotulo="Disse sim" icone="sim" valor={resumo.sim} detalhe="em todas as datas" />
+        <Numero
+          rotulo="Sem resposta"
+          icone="respostas"
+          valor={resumo.faltamAbertas}
+          detalhe="nas datas abertas"
+          alerta={resumo.faltamAbertas > 0 && ficha.banda === 'music'}
         />
-      )}
+      </div>
 
-      {ficha.voluts && <CadastroDoVoluts cadastro={ficha.voluts} />}
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-start">
+        <div className="space-y-8">
+          <AvisosDaFicha musicoId={ficha.id} nome={ficha.nome} avisos={ficha.avisos} />
 
-      <section className="space-y-2.5">
-        <h2 className="text-muted-foreground text-sm font-medium tracking-wide uppercase">
-          Próximas datas · {ficha.proximas.length}
-        </h2>
-        {ficha.proximas.length === 0 ? (
-          <p className="text-muted-foreground text-sm">Nenhuma data pela frente.</p>
-        ) : (
-          <DatasDaFicha
-            datas={ficha.proximas}
-            musicoId={ficha.id}
-            slug={ficha.slug}
-            nome={ficha.nome}
-            ajustavel
-          />
-        )}
-      </section>
+          <Secao titulo="Instrumentos">
+            {ficha.instrumentos.length === 0 ? (
+              <p className="text-muted-foreground text-sm">Nenhum instrumento cadastrado ainda.</p>
+            ) : (
+              <div className={`${vidro} divide-y divide-white/[0.05] overflow-hidden`}>
+                {ficha.instrumentos.map((i) => (
+                  <div
+                    key={i.id}
+                    className={`flex items-center justify-between gap-3 px-4 py-3 text-sm ${i.ativo ? '' : 'opacity-60'}`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="font-medium">{i.nome}</span>
+                      {i.principal && <Selo tom="lima">principal</Selo>}
+                      {!i.ativo && <span className="text-muted-foreground text-xs">informou que não toca</span>}
+                    </span>
+                    <span className="text-muted-foreground text-xs">
+                      {i.nivel ? NIVEL_LABEL[i.nivel] : 'sem nível'} · {ORDEM_LABEL[i.ordem]}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Secao>
 
-      {ficha.passadas.length > 0 && (
-        <section className="space-y-2.5">
-          <h2 className="text-muted-foreground text-sm font-medium tracking-wide uppercase">
-            Histórico · {ficha.passadas.length}
-          </h2>
-          <DatasDaFicha
-            datas={ficha.passadas}
-            musicoId={ficha.id}
-            slug={ficha.slug}
-            nome={ficha.nome}
-            ajustavel={false}
-          />
-        </section>
-      )}
+          {ficha.banda === 'music' && (
+            <AcessoDaFicha
+              musicoId={ficha.id}
+              slug={ficha.slug}
+              whatsapp={ficha.whatsapp}
+              aniversario={ficha.aniversario}
+              ultimoAcesso={ficha.ultimoAcesso}
+              temTelefoneDoCadastro={ficha.temTelefoneDoCadastro}
+            />
+          )}
+
+          {ficha.voluts && <CadastroDoVoluts cadastro={ficha.voluts} />}
+        </div>
+
+        <div className="space-y-8">
+          <Secao titulo={`Próximas datas · ${ficha.proximas.length}`}>
+            {ficha.proximas.length === 0 ? (
+              <p className="text-muted-foreground text-sm">Nenhuma data pela frente.</p>
+            ) : (
+              <DatasDaFicha datas={ficha.proximas} musicoId={ficha.id} slug={ficha.slug} nome={ficha.nome} ajustavel />
+            )}
+          </Secao>
+
+          {ficha.passadas.length > 0 && (
+            <Secao titulo={`Histórico · ${ficha.passadas.length}`}>
+              <DatasDaFicha
+                datas={ficha.passadas}
+                musicoId={ficha.id}
+                slug={ficha.slug}
+                nome={ficha.nome}
+                ajustavel={false}
+              />
+            </Secao>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

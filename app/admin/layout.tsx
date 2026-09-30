@@ -1,7 +1,7 @@
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { CascaPainel } from '@/components/painel/casca'
+import { carregarImprevistos } from '@/lib/dados-admin'
 import { gestorAtual } from '@/lib/supabase/sessao'
-import { sair } from '@/actions/auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,45 +12,11 @@ export default async function AdminLayout({ children }: LayoutProps<'/admin'>) {
   // Quem é gestor e ainda não entrou vê o /login, que é público.
   if (!gestor) notFound()
 
-  return (
-    <div className="flex min-h-full flex-1 flex-col">
-      <header className="border-border bg-background/80 sticky top-0 z-10 border-b backdrop-blur">
-        <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-4 px-4 py-3">
-          <nav className="flex items-center gap-4 text-sm">
-            <Link href="/admin" className="font-medium">
-              Painel
-            </Link>
-            <Link
-              href="/admin/escala"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Escalas
-            </Link>
-            <Link
-              href="/admin/respostas"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Respostas
-            </Link>
-            <Link
-              href="/admin/musicos"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Pessoas
-            </Link>
-          </nav>
-          <form action={sair}>
-            <button
-              type="submit"
-              className="text-muted-foreground hover:text-foreground text-sm"
-            >
-              Sair
-            </button>
-          </form>
-        </div>
-      </header>
+  const imprevistos = await carregarImprevistos()
 
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8">{children}</main>
-    </div>
+  return (
+    <CascaPainel gestor={gestor.nome} imprevistos={imprevistos.length}>
+      {children}
+    </CascaPainel>
   )
 }

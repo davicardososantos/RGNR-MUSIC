@@ -43,6 +43,8 @@ import {
   faChevronLeft,
   faBolt,
   faEnvelope,
+  faEllipsis,
+  faMagnifyingGlass,
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
@@ -119,6 +121,8 @@ export const ICONES = {
   sair: faRightFromBracket,
   rapido: faBolt,
   email: faEnvelope,
+  mais: faEllipsis,
+  buscar: faMagnifyingGlass,
 } as const
 
 export type NomeIcone = keyof typeof ICONES

@@ -199,6 +199,10 @@ export type LinhaDoElenco = {
   tocou: number
   faltamAbertas: number
   disseSim: number
+  /** /foto/<id> quando há foto no cadastro. */
+  foto: string | null
+  entrouNaArea: boolean
+  temNascimento: boolean
 }
 
 /** O elenco inteiro, com o suficiente para decidir em quem tocar primeiro. */
@@ -258,6 +262,9 @@ export async function listarElenco(): Promise<LinhaDoElenco[]> {
       ).length,
       faltamAbertas: abertos.length - respondidasAbertas,
       disseSim: minhas.filter((d) => d.resposta === 'sim').length,
+      foto: m.foto_url ? `/foto/${m.id}` : null,
+      entrouNaArea: Boolean(m.ultimo_acesso),
+      temNascimento: Boolean(m.aniversario),
     }
   })
 }

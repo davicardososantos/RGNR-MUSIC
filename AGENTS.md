@@ -107,6 +107,27 @@ migration `20260930180000_area_do_musico`.
 - Movimentos próprios em `globals.css` (`area-*`), desligados com
   `prefers-reduced-motion`.
 
+## Painel dos gestores (desde 30/09/2026)
+
+O `/admin` usa o mesmo idioma visual da área do músico. Moldura em
+`components/painel/casca.tsx` (menu lateral no computador; no celular, abas
+embaixo e "Mais"); peças em `components/painel/ui.tsx` (`Cabecalho`,
+`Numero`, `Secao`, `Medidor`, `Selo`, `Rosto`); dados do dashboard em
+`lib/dados-painel.ts`.
+
+- **Gráficos são SVG/HTML próprios**, sem biblioteca, em
+  `components/painel/graficos/`. As cores seguem o método de dataviz e foram
+  validadas no script dele: sim `#7fa328` (a lima da marca um degrau abaixo,
+  porque `#cef955` fica clara demais como marca de gráfico no fundo escuro),
+  se precisar `#8c69cc`, não em cinza neutro. O mapa de cobertura usa uma rampa
+  de um tom só (`RAMPA`). Todo gráfico tem legenda, balão no mouse e no foco do
+  teclado, e o valor também aparece em texto: o balão enfeita, não esconde.
+- No mapa, "0" em vermelho é buraco de verdade; data que ninguém respondeu
+  ainda fica neutra, porque é cedo, não é falta.
+- `lib/supabase/service.ts` tenta de novo (até 3 vezes) as falhas passageiras do
+  banco: 401 em qualquer método, 5xx/429/rede só em leitura. `app/error.tsx`
+  mostra "Tentar de novo" em vez do 500 cru.
+
 ## Cadastro do Voluts
 
 Desde 30/09/2026, `musicos` tem as colunas do Voluts (`voluts_id`, `nome_completo`,
