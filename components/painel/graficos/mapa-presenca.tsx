@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { RAMPA } from '../ui'
 import { rotuloMes } from './colunas-mes'
 import { useDica } from './dica'
@@ -20,6 +20,11 @@ export function MapaPresenca({ meses, pessoas }: { meses: string[]; pessoas: Pes
   const [comAntigos, setComAntigos] = useState(false)
   const visiveis = pessoas.filter((p) => comAntigos || p.atual)
   const antigos = pessoas.filter((p) => !p.atual).length
+  // No celular a tabela rola de lado: começa no fim, com os meses mais recentes à vista.
+  const rolagem = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (rolagem.current) rolagem.current.scrollLeft = rolagem.current.scrollWidth
+  }, [])
 
   return (
     <div ref={caixa} className="relative" onPointerLeave={esconder}>
@@ -46,7 +51,7 @@ export function MapaPresenca({ meses, pessoas }: { meses: string[]; pessoas: Pes
         )}
       </div>
 
-      <div className="-mx-5 overflow-x-auto px-5 pb-2 lg:mx-0 lg:px-0">
+      <div ref={rolagem} className="-mx-5 overflow-x-auto px-5 pb-2 lg:mx-0 lg:px-0">
         <table className="w-full border-separate border-spacing-[2px]">
           <thead>
             <tr>

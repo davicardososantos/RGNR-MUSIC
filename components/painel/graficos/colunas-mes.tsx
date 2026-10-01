@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import { COR } from '../ui'
 import { useDica } from './dica'
 
@@ -22,6 +23,11 @@ export function ColunasMes({ meses }: { meses: { mes: string; eventos: number; p
   const marcas = [0, teto / 2, teto]
   const indiceMax = meses.findIndex((m) => m.pessoas === max)
   const ALTURA = 180
+  // No celular os meses não cabem e a caixa rola: começa no fim, com o mês atual à vista.
+  const rolagem = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (rolagem.current) rolagem.current.scrollLeft = rolagem.current.scrollWidth
+  }, [])
 
   return (
     <div ref={caixa} className="relative" onPointerLeave={esconder}>
@@ -33,7 +39,7 @@ export function ColunasMes({ meses }: { meses: { mes: string; eventos: number; p
             </span>
           ))}
         </div>
-        <div className="-mr-2 min-w-0 flex-1 overflow-x-auto pr-2 pb-1">
+        <div ref={rolagem} className="-mr-2 min-w-0 flex-1 overflow-x-auto pr-2 pb-1">
           <div className="relative" style={{ height: ALTURA, minWidth: meses.length * 30 }}>
             {marcas.map((v) => (
               <div
