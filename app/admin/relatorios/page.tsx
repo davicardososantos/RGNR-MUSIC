@@ -105,7 +105,7 @@ export default async function RelatoriosPage() {
         />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
         <Secao
           titulo="Pessoas diferentes por mês"
           descricao="Quantas pessoas tocaram em cada mês. Coluna baixa em mês cheio de datas é sinal de pouco rodízio."

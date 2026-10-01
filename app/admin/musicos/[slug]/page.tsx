@@ -91,7 +91,7 @@ export default async function MusicoPage({ params }: PageProps<'/admin/musicos/[
         )}
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-start">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-start">
         <div className="space-y-8">
           <AvisosDaFicha musicoId={ficha.id} nome={ficha.nome} avisos={ficha.avisos} />
 

@@ -130,12 +130,13 @@ embaixo e "Mais"); peças em `components/painel/ui.tsx` (`Cabecalho`,
 
 ## Histórico importado (30/09/2026)
 
-As escalas de **jul/2025 a ago/2026** (81 datas, 574 escalações) vieram dos posts de formação do
+As escalas de **jul/2025 a ago/2026** (81 datas, 567 escalações) vieram dos posts de formação do
 grupo de WhatsApp "RGNR | Multimídia". Os eventos antigos estão como `fechada`, sem
 disponibilidade; as escalações têm `criado_por = 'importado: grupo Multimídia (30/09/2026)'`.
-13 ex-membros entraram com `status = 'fora'` e `no_formulario = false`: aparecem no histórico e em
+12 ex-membros entraram com `status = 'fora'` e `no_formulario = false`: aparecem no histórico e em
 Pessoas ("Já tocaram com a banda"), nunca no formulário, na área ou na cobrança. Os scripts ficam
-fora do repo, no vault da liderança.
+fora do repo, no vault da liderança, e acertam o banco por diferença: quem lê nome pelo contexto
+(Mateus x Matheus, André Santos x André Lima) é o `ler.py` de lá, não o app.
 
 - Por isso **"disse sim × tocou" usa `tocouNoPeriodo`**: só as datas com formulário (desde
   set/2026). Comparar "sim" com 14 meses de "tocou" faria todo mundo parecer escalado demais.
@@ -147,9 +148,11 @@ Desde 30/09/2026, `musicos` tem as colunas do Voluts (`voluts_id`, `nome_complet
 `email`, `aniversario`, `funcoes_voluts`, `dias_voluts`...), mostradas só na ficha do
 painel (`components/admin/cadastro-voluts.tsx`). Quem preenche é um script da
 liderança que lê o Voluts com o login do gestor e **não fica neste repositório**.
-O app só lê essas colunas. `nome` continua sendo o apelido do formulário, o
-telefone do Voluts vai só para `telefone_voluts` (login, nunca exibido) e as
-funções de lá não mexem em `musico_instrumento`.
+O app só lê essas colunas. `nome` não vem do Voluts: é o nome com sobrenome
+que a banda usa ("Mateus Silva", "Matheus Ruan"; decisão do Davi em 30/09/2026,
+para separar quem tem o mesmo primeiro nome). A mensagem de WhatsApp usa só o
+primeiro nome (`primeiroNome`). O telefone do Voluts vai só para `telefone_voluts`
+(login, nunca exibido) e as funções de lá não mexem em `musico_instrumento`.
 
 ## Ícones
 

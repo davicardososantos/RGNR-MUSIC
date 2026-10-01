@@ -114,7 +114,7 @@ export default async function PainelPage() {
       </div>
 
       {/* A próxima escala e o que pede atenção */}
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] lg:items-start">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] lg:items-start">
         {proxima ? (
           <CartaoEscala d={proxima} destaque />
         ) : (
@@ -187,7 +187,7 @@ export default async function PainelPage() {
 
       {/* Respostas por data */}
       {painel.datas.length > 0 && (
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]">
           <Secao
             titulo="Respostas por data"
             descricao={`Das ${painel.total} pessoas da banda, quem pode em cada data.`}

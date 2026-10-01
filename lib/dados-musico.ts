@@ -261,12 +261,17 @@ export async function listarElenco(): Promise<LinhaDoElenco[]> {
           (relacoes ?? []).find((r) => r.musico_id === m.id)
             ?.instrumento_id as string,
         ) ?? null,
-      tocou: (escalacoes ?? []).filter(
-        (e) =>
-          e.musico_id === m.id &&
-          e.tipo === 'titular' &&
-          passados.has(e.evento_id as string),
-      ).length,
+      // Conta datas, não funções: violão e comunicação no mesmo culto é uma vez só.
+      tocou: new Set(
+        (escalacoes ?? [])
+          .filter(
+            (e) =>
+              e.musico_id === m.id &&
+              e.tipo === 'titular' &&
+              passados.has(e.evento_id as string),
+          )
+          .map((e) => e.evento_id as string),
+      ).size,
       faltamAbertas: abertos.length - respondidasAbertas,
       disseSim: minhas.filter((d) => d.resposta === 'sim').length,
       foto: m.foto_url ? `/foto/${m.id}` : null,
